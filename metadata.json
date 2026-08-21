@@ -1,0 +1,7 @@
+{
+  "name": "Skill Grow IND Earning Dashboard",
+  "description": "Skill Grow IND official affiliate earning dashboard with smooth 6-second live counting, custom logo, profile ribbon, copyable affiliate ID, detail breakdown sheets, and full customization controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

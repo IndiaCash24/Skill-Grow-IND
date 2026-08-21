@@ -1,0 +1,152 @@
+import { UserProfile, EarningStats, Transaction, LeaderboardUser, CourseItem } from '../types';
+
+export const initialProfile: UserProfile = {
+  name: 'ROSHNI',
+  referralId: 'SGIND7892X',
+  packageTier: 'EXPERT PACKAGE',
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+  email: 'roshni.affiliate@gmail.com',
+  phone: '+91 98765 43210',
+  joinDate: '12 August 2024',
+  sponsorName: 'Aman Sharma',
+  sponsorId: 'SGIND99281',
+  kycStatus: 'Verified',
+  upiId: 'roshni@oksbi',
+  bankAccount: '•••• •••• •••• 4921',
+  ifscCode: 'SBIN0004921',
+};
+
+export const initialEarnings: EarningStats = {
+  today: 0,
+  sevenDays: 0,
+  thirtyDays: 0,
+  allTime: 0,
+  passiveIncome: 0,
+  walletBalance: 0,
+  totalWithdrawn: 0,
+};
+
+export const sampleTransactions: Transaction[] = [
+  {
+    id: 'TXN-90812',
+    leadName: 'Rahul Verma',
+    packageName: 'Expert Package',
+    amount: 1750,
+    type: 'DIRECT_COMMISSION',
+    date: 'Today, 02:45 PM',
+    status: 'Completed',
+  },
+  {
+    id: 'TXN-90765',
+    leadName: 'Pooja Singh (Team downline)',
+    packageName: 'Master Package',
+    amount: 500,
+    type: 'PASSIVE_TIER_1',
+    date: 'Yesterday, 06:15 PM',
+    status: 'Completed',
+  },
+  {
+    id: 'TXN-90642',
+    leadName: 'Aniket Gupta',
+    packageName: 'Intermediate Package',
+    amount: 850,
+    type: 'DIRECT_COMMISSION',
+    date: '18 Aug 2024, 11:30 AM',
+    status: 'Completed',
+  },
+  {
+    id: 'TXN-90511',
+    leadName: 'Sameer Khan (Tier 2 team)',
+    packageName: 'Expert Package',
+    amount: 250,
+    type: 'PASSIVE_TIER_2',
+    date: '16 Aug 2024, 08:20 PM',
+    status: 'Completed',
+  },
+];
+
+export const leaderboardData: LeaderboardUser[] = [
+  {
+    rank: 1,
+    name: 'Aakash Verma',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    earnings: 485000,
+    package: 'Master Package',
+    state: 'Maharashtra',
+  },
+  {
+    rank: 2,
+    name: 'Simran Kaur',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+    earnings: 342000,
+    package: 'Expert Package',
+    state: 'Delhi NCR',
+  },
+  {
+    rank: 3,
+    name: 'Rohan Sharma',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+    earnings: 295000,
+    package: 'Master Package',
+    state: 'Uttar Pradesh',
+  },
+  {
+    rank: 4,
+    name: 'Priya Mehra',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
+    earnings: 215000,
+    package: 'Expert Package',
+    state: 'Madhya Pradesh',
+  },
+  {
+    rank: 5,
+    name: 'Vikas Dubey',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80',
+    earnings: 178000,
+    package: 'Expert Package',
+    state: 'Bihar',
+  },
+];
+
+export const coursesData: CourseItem[] = [
+  {
+    id: 'c1',
+    title: 'Instagram Reels & Organic Lead Mastery',
+    category: 'Lead Generation',
+    duration: '4h 30m',
+    lessons: 18,
+    thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&auto=format&fit=crop&q=80',
+    progress: 75,
+    instructor: 'Yash Vardhan',
+  },
+  {
+    id: 'c2',
+    title: 'High Ticket Sales Closing & DM Mastery',
+    category: 'Sales',
+    duration: '3h 15m',
+    lessons: 14,
+    thumbnail: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&auto=format&fit=crop&q=80',
+    progress: 40,
+    instructor: 'Sneha Patel',
+  },
+  {
+    id: 'c3',
+    title: 'Video Editing for High Engagement (CapCut & VN)',
+    category: 'Content Creation',
+    duration: '5h 00m',
+    lessons: 22,
+    thumbnail: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&auto=format&fit=crop&q=80',
+    progress: 10,
+    instructor: 'Arjun Das',
+  },
+  {
+    id: 'c4',
+    title: 'Affiliate Marketing Blueprint from 0 to 1 Lakh/mo',
+    category: 'Affiliate',
+    duration: '6h 45m',
+    lessons: 28,
+    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80',
+    progress: 90,
+    instructor: 'Skill Grow IND Founders',
+  },
+];
