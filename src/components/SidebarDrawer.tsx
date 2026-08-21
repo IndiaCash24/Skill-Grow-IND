@@ -29,13 +29,18 @@ export type AppView =
   | 'referral'
   | 'payout'
   | 'kyc'
-  | 'simulator';
+  | 'simulator'
+  | 'login'
+  | 'register';
 
 interface SidebarDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   activeView: AppView;
+  isLoggedIn?: boolean;
   onSelectView: (view: AppView) => void;
+  onOpenLogin: () => void;
+  onLogout: () => void;
   profile: UserProfile;
   earnings: EarningStats;
   isMobileFrame: boolean;
@@ -53,7 +58,10 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isOpen,
   onClose,
   activeView,
+  isLoggedIn = false,
   onSelectView,
+  onOpenLogin,
+  onLogout,
   profile,
   earnings,
   isMobileFrame,
@@ -63,6 +71,11 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   if (!isOpen) return null;
 
   const navigateTo = (view: AppView) => {
+    if (view !== 'home' && !isLoggedIn) {
+      onClose();
+      onOpenLogin();
+      return;
+    }
     onSelectView(view);
     onClose();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -106,33 +119,57 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           </div>
 
           {/* User mini summary */}
-          <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white">
-            <div className="flex items-center space-x-3.5">
-              <img
-                src={profile.avatarUrl}
-                alt={profile.name}
-                className="w-12 h-12 rounded-full object-cover border-2 border-orange-400 shadow-md"
-                referrerPolicy="no-referrer"
-              />
-              <div className="overflow-hidden">
-                <h4 className="font-bold text-sm text-white truncate tracking-wide">
-                  {profile.name}
-                </h4>
-                <p className="text-[11px] text-orange-200">ID: {profile.referralId}</p>
-                <div className="inline-flex items-center space-x-1 mt-1 bg-orange-500/30 text-orange-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-400/30">
-                  <ShieldCheck className="w-2.5 h-2.5" />
-                  <span>{profile.packageTier}</span>
+          {isLoggedIn ? (
+            <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white">
+              <div className="flex items-center space-x-3.5">
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-orange-400 shadow-md"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="overflow-hidden">
+                  <h4 className="font-bold text-sm text-white truncate tracking-wide">
+                    {profile.name}
+                  </h4>
+                  <p className="text-[11px] text-orange-200">ID: {profile.referralId}</p>
+                  <div className="inline-flex items-center space-x-1 mt-1 bg-orange-500/30 text-orange-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-400/30">
+                    <ShieldCheck className="w-2.5 h-2.5" />
+                    <span>{profile.packageTier}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-              <span className="text-gray-300">Total Earned:</span>
-              <span className="font-bold text-emerald-400 text-sm">
-                ₹ {earnings.allTime.toLocaleString('en-IN')}
-              </span>
+              <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
+                <span className="text-gray-300">Total Earned:</span>
+                <span className="font-bold text-emerald-400 text-sm">
+                  ₹ {earnings.allTime.toLocaleString('en-IN')}
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-400/40 flex items-center justify-center text-orange-400 font-bold text-sm">
+                  GK
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white">Guest Visitor</h4>
+                  <p className="text-[11px] text-gray-400">Join 5.25L+ Skill Grow Students</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenLogin();
+                }}
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold py-2 rounded-xl text-center shadow-md active:scale-95 transition-all"
+              >
+                Login / Register Now
+              </button>
+            </div>
+          )}
 
           {/* Menu Items */}
           <div className="p-4 space-y-1.5 flex-1">

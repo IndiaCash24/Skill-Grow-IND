@@ -31,12 +31,16 @@ import { FloatingNeedHelp } from './FloatingNeedHelp';
 import confetti from 'canvas-confetti';
 
 interface HomePageProps {
+  isLoggedIn?: boolean;
+  onRequireLogin: () => void;
   onNavigateToDashboard: () => void;
   onOpenCourses: () => void;
   onOpenLeaderboard: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
+  isLoggedIn = false,
+  onRequireLogin,
   onNavigateToDashboard,
   onOpenCourses,
   onOpenLeaderboard,
@@ -46,6 +50,10 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [enrolledPackageName, setEnrolledPackageName] = useState('');
 
   const handleEnrollClick = (pkg: CoursePackage) => {
+    if (!isLoggedIn) {
+      onRequireLogin();
+      return;
+    }
     setEnrolledPackageName(pkg.name);
     setIsEnrollSuccessModalOpen(true);
     try {
@@ -57,6 +65,14 @@ export const HomePage: React.FC<HomePageProps> = ({
     } catch {
       // ignore
     }
+  };
+
+  const handleProtectedAction = (action: () => void) => {
+    if (!isLoggedIn) {
+      onRequireLogin();
+      return;
+    }
+    action();
   };
 
   return (

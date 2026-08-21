@@ -1,24 +1,52 @@
 import React from 'react';
-import { ShoppingCart, LayoutDashboard, Home } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Home, LogIn } from 'lucide-react';
 import { AppView } from './SidebarDrawer';
 
 interface HeaderProps {
   avatarUrl: string;
   activeView: AppView;
+  isLoggedIn?: boolean;
   cartCount?: number;
   onSelectView: (view: AppView) => void;
   onOpenMenu: () => void;
   onOpenProfile: () => void;
+  onOpenLogin: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   avatarUrl,
   activeView,
+  isLoggedIn = false,
   cartCount = 0,
   onSelectView,
   onOpenMenu,
   onOpenProfile,
+  onOpenLogin,
 }) => {
+  const handleDashboardClick = () => {
+    if (!isLoggedIn) {
+      onOpenLogin();
+      return;
+    }
+    onSelectView('dashboard');
+  };
+
+  const handleProfileClick = () => {
+    if (!isLoggedIn) {
+      onOpenLogin();
+      return;
+    }
+    onOpenProfile();
+  };
+
+  const handleCartClick = () => {
+    if (!isLoggedIn) {
+      onOpenLogin();
+      return;
+    }
+    onSelectView('home');
+  };
+
   return (
     <header
       id="app-header"
@@ -44,13 +72,23 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right Controls: Quick View Switch + Cart (0) + Avatar + Hamburger Icon */}
-      <div className="flex items-center space-x-2.5 sm:space-x-3.5">
+      <div className="flex items-center space-x-2 sm:space-x-3">
         
-        {/* Quick View Switch Button */}
-        {activeView !== 'dashboard' ? (
+        {/* Quick View Switch / Login Button */}
+        {!isLoggedIn ? (
+          <button
+            id="nav-to-login-btn"
+            onClick={onOpenLogin}
+            type="button"
+            className="inline-flex items-center space-x-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-xs active:scale-95 transition-all"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Login</span>
+          </button>
+        ) : activeView !== 'dashboard' ? (
           <button
             id="nav-to-dashboard-btn"
-            onClick={() => onSelectView('dashboard')}
+            onClick={handleDashboardClick}
             type="button"
             className="hidden sm:inline-flex items-center space-x-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-xs active:scale-95 transition-all"
           >
@@ -69,30 +107,34 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Circular Emblem / Avatar */}
+        {/* Circular Emblem / Avatar (Matching Screenshot 1 & 2) */}
         <button
           id="header-profile-btn"
-          onClick={onOpenProfile}
+          onClick={handleProfileClick}
           type="button"
           aria-label="View Profile"
-          className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-orange-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-400 active:scale-95 transition-transform"
+          className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-orange-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-400 active:scale-95 transition-transform bg-orange-50 flex items-center justify-center"
         >
-          <img
-            src={avatarUrl}
-            alt="Profile Avatar"
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80';
-            }}
-          />
+          {isLoggedIn ? (
+            <img
+              src={avatarUrl}
+              alt="Profile Avatar"
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80';
+              }}
+            />
+          ) : (
+            <span className="font-extrabold text-xs text-orange-600">GK</span>
+          )}
         </button>
 
-        {/* Cart Icon with badge "0" (from Screenshot 1, 2, 3, 4, 5) */}
+        {/* Cart Icon with badge "0" (from Screenshot 1, 2, 3) */}
         <button
           id="header-cart-btn"
-          onClick={() => onSelectView('home')}
+          onClick={handleCartClick}
           type="button"
           aria-label="Shopping Cart"
           className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-xs active:scale-95 transition-transform"
