@@ -69,13 +69,6 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="px-4 py-6 sm:py-8 max-w-4xl mx-auto flex flex-col items-center text-center space-y-4">
-          
-          {/* Top Pill Tag */}
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-orange-400/40 px-3.5 py-1 rounded-full text-[11px] font-bold text-orange-300 tracking-wider uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>A Day Of Learning, Networking & Celebration!</span>
-          </div>
-
           {/* Main Event Headline */}
           <div className="space-y-1">
             <div className="flex items-center justify-center space-x-1 text-xs font-semibold text-gray-300">
