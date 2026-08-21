@@ -4,13 +4,13 @@ import { HomePage } from './components/HomePage';
 import { ProfileCard } from './components/ProfileCard';
 import { EarningCardsGrid } from './components/EarningCardsGrid';
 import { DetailsModal } from './components/DetailsModal';
-import { SidebarDrawer } from './components/SidebarDrawer';
-import { SimulatorModal } from './components/SimulatorModal';
-import { PayoutModal } from './components/PayoutModal';
-import { ReferralModal } from './components/ReferralModal';
-import { LeaderboardModal } from './components/LeaderboardModal';
-import { CoursesModal } from './components/CoursesModal';
-import { KycModal } from './components/KycModal';
+import { SidebarDrawer, AppView } from './components/SidebarDrawer';
+import { CoursesPage } from './components/CoursesPage';
+import { LeaderboardPage } from './components/LeaderboardPage';
+import { ReferralPage } from './components/ReferralPage';
+import { PayoutPage } from './components/PayoutPage';
+import { KycPage } from './components/KycPage';
+import { SimulatorPage } from './components/SimulatorPage';
 import {
   initialProfile,
   initialEarnings,
@@ -21,8 +21,8 @@ import {
 import { UserProfile, EarningStats, Transaction } from './types';
 
 export default function App() {
-  // Navigation active view: 'home' | 'dashboard'
-  const [activeView, setActiveView] = useState<'home' | 'dashboard'>('home');
+  // Navigation active view: 'home' | 'dashboard' | 'courses' | 'leaderboard' | 'referral' | 'payout' | 'kyc' | 'simulator'
+  const [activeView, setActiveView] = useState<AppView>('home');
 
   // State management with localStorage fallback
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -45,12 +45,6 @@ export default function App() {
     'today' | 'sevenDays' | 'thirtyDays' | 'allTime' | 'passive' | null
   >(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
-  const [isPayoutOpen, setIsPayoutOpen] = useState(false);
-  const [isReferralOpen, setIsReferralOpen] = useState(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-  const [isCoursesOpen, setIsCoursesOpen] = useState(false);
-  const [isKycOpen, setIsKycOpen] = useState(false);
 
   // View mode: 'mobile-frame' or 'fluid'
   const [isMobileFrame, setIsMobileFrame] = useState(true);
@@ -151,29 +145,44 @@ export default function App() {
           <Header
             avatarUrl={profile.avatarUrl}
             activeView={activeView}
-            onSelectView={(view) => setActiveView(view)}
+            onSelectView={(view) => {
+              setActiveView(view);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onOpenMenu={() => setIsSidebarOpen(true)}
-            onOpenProfile={() => setIsSimulatorOpen(true)}
+            onOpenProfile={() => {
+              setActiveView('simulator');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
 
           {/* Conditional View Rendering */}
-          {activeView === 'home' ? (
-            /* Home Page View (Detailed from top to bottom matching screenshots) */
+          {activeView === 'home' && (
             <HomePage
               onNavigateToDashboard={() => {
                 setActiveView('dashboard');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onOpenCourses={() => setIsCoursesOpen(true)}
-              onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
+              onOpenCourses={() => {
+                setActiveView('courses');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenLeaderboard={() => {
+                setActiveView('leaderboard');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
-          ) : (
-            /* Earning Dashboard View */
+          )}
+
+          {activeView === 'dashboard' && (
             <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
               {/* Top Profile Card with Verified Badge & Copy ID */}
               <ProfileCard
                 profile={profile}
-                onEditProfile={() => setIsSimulatorOpen(true)}
+                onEditProfile={() => {
+                  setActiveView('simulator');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
 
               {/* 5 Earning Metric Cards Grid */}
@@ -182,6 +191,77 @@ export default function App() {
                 onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
               />
             </div>
+          )}
+
+          {activeView === 'courses' && (
+            <CoursesPage
+              courses={coursesData}
+              profile={profile}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeView === 'leaderboard' && (
+            <LeaderboardPage
+              users={leaderboardData}
+              profile={profile}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeView === 'referral' && (
+            <ReferralPage
+              profile={profile}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeView === 'payout' && (
+            <PayoutPage
+              profile={profile}
+              earnings={earnings}
+              transactions={transactions}
+              onRequestWithdrawal={handleRequestWithdrawal}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeView === 'kyc' && (
+            <KycPage
+              profile={profile}
+              onUpdateKyc={handleUpdateKyc}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {activeView === 'simulator' && (
+            <SimulatorPage
+              profile={profile}
+              earnings={earnings}
+              onUpdateProfile={handleUpdateProfile}
+              onUpdateEarnings={handleUpdateEarnings}
+              onAddTransaction={handleAddTransaction}
+              onResetDefaults={handleResetToScreenshot}
+              onNavigate={(view) => {
+                setActiveView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
           )}
         </div>
       </main>
@@ -192,7 +272,11 @@ export default function App() {
         earnings={earnings}
         transactions={transactions}
         onClose={() => setActiveDetailsCard(null)}
-        onRequestPayout={() => setIsPayoutOpen(true)}
+        onRequestPayout={() => {
+          setActiveDetailsCard(null);
+          setActiveView('payout');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       <SidebarDrawer
@@ -208,55 +292,6 @@ export default function App() {
         isMobileFrame={isMobileFrame}
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
         onResetDefaults={handleResetToScreenshot}
-        onOpenReferral={() => setIsReferralOpen(true)}
-        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
-        onOpenCourses={() => setIsCoursesOpen(true)}
-        onOpenPayout={() => setIsPayoutOpen(true)}
-        onOpenSimulator={() => setIsSimulatorOpen(true)}
-        onOpenKyc={() => setIsKycOpen(true)}
-      />
-
-      <SimulatorModal
-        isOpen={isSimulatorOpen}
-        onClose={() => setIsSimulatorOpen(false)}
-        profile={profile}
-        earnings={earnings}
-        onUpdateProfile={handleUpdateProfile}
-        onUpdateEarnings={handleUpdateEarnings}
-        onAddTransaction={handleAddTransaction}
-      />
-
-      <PayoutModal
-        isOpen={isPayoutOpen}
-        onClose={() => setIsPayoutOpen(false)}
-        profile={profile}
-        earnings={earnings}
-        onRequestWithdrawal={handleRequestWithdrawal}
-      />
-
-      <ReferralModal
-        isOpen={isReferralOpen}
-        onClose={() => setIsReferralOpen(false)}
-        profile={profile}
-      />
-
-      <LeaderboardModal
-        isOpen={isLeaderboardOpen}
-        onClose={() => setIsLeaderboardOpen(false)}
-        users={leaderboardData}
-      />
-
-      <CoursesModal
-        isOpen={isCoursesOpen}
-        onClose={() => setIsCoursesOpen(false)}
-        courses={coursesData}
-      />
-
-      <KycModal
-        isOpen={isKycOpen}
-        onClose={() => setIsKycOpen(false)}
-        profile={profile}
-        onUpdateKyc={handleUpdateKyc}
       />
     </div>
   );

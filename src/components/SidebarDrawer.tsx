@@ -9,7 +9,6 @@ import {
   CreditCard,
   History,
   Sliders,
-  Sparkles,
   ExternalLink,
   PhoneCall,
   LogOut,
@@ -22,22 +21,32 @@ import {
 import { UserProfile, EarningStats } from '../types';
 import { SkillGrowIndLogo } from './SkillGrowIndLogo';
 
+export type AppView =
+  | 'home'
+  | 'dashboard'
+  | 'courses'
+  | 'leaderboard'
+  | 'referral'
+  | 'payout'
+  | 'kyc'
+  | 'simulator';
+
 interface SidebarDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  activeView: 'home' | 'dashboard';
-  onSelectView: (view: 'home' | 'dashboard') => void;
+  activeView: AppView;
+  onSelectView: (view: AppView) => void;
   profile: UserProfile;
   earnings: EarningStats;
   isMobileFrame: boolean;
   onToggleMobileFrame: () => void;
   onResetDefaults: () => void;
-  onOpenReferral: () => void;
-  onOpenLeaderboard: () => void;
-  onOpenCourses: () => void;
-  onOpenPayout: () => void;
-  onOpenSimulator: () => void;
-  onOpenKyc: () => void;
+  onOpenReferral?: () => void;
+  onOpenLeaderboard?: () => void;
+  onOpenCourses?: () => void;
+  onOpenPayout?: () => void;
+  onOpenSimulator?: () => void;
+  onOpenKyc?: () => void;
 }
 
 export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
@@ -50,14 +59,14 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isMobileFrame,
   onToggleMobileFrame,
   onResetDefaults,
-  onOpenReferral,
-  onOpenLeaderboard,
-  onOpenCourses,
-  onOpenPayout,
-  onOpenSimulator,
-  onOpenKyc,
 }) => {
   if (!isOpen) return null;
+
+  const navigateTo = (view: AppView) => {
+    onSelectView(view);
+    onClose();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -111,7 +120,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                 </h4>
                 <p className="text-[11px] text-orange-200">ID: {profile.referralId}</p>
                 <div className="inline-flex items-center space-x-1 mt-1 bg-orange-500/30 text-orange-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-400/30">
-                  <Sparkles className="w-2.5 h-2.5" />
+                  <ShieldCheck className="w-2.5 h-2.5" />
                   <span>{profile.packageTier}</span>
                 </div>
               </div>
@@ -134,10 +143,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* 1. Home Page Link */}
             <button
               id="menu-home-link"
-              onClick={() => {
-                onClose();
-                onSelectView('home');
-              }}
+              onClick={() => navigateTo('home')}
               className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
                 activeView === 'home'
                   ? 'bg-orange-50 text-orange-600 border border-orange-200'
@@ -148,13 +154,10 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <span>Home Page (Courses & Summit)</span>
             </button>
 
-            {/* 2. Earning Dashboard Link (High Priority Request!) */}
+            {/* 2. Earning Dashboard Link */}
             <button
               id="menu-dashboard-link"
-              onClick={() => {
-                onClose();
-                onSelectView('dashboard');
-              }}
+              onClick={() => navigateTo('dashboard')}
               className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
                 activeView === 'dashboard'
                   ? 'bg-pink-50 text-pink-600 border border-pink-200 shadow-xs'
@@ -173,11 +176,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* 3. Packages & Courses */}
             <button
               id="menu-courses-link"
-              onClick={() => {
-                onClose();
-                onOpenCourses();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
+              onClick={() => navigateTo('courses')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+                activeView === 'courses'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <BookOpen className="w-4 h-4 text-emerald-600" />
               <span>Packages & Training</span>
@@ -186,11 +190,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* 4. Leaderboard */}
             <button
               id="menu-leaderboard-link"
-              onClick={() => {
-                onClose();
-                onOpenLeaderboard();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
+              onClick={() => navigateTo('leaderboard')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+                activeView === 'leaderboard'
+                  ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <Trophy className="w-4 h-4 text-amber-500" />
               <span>All India Leaderboard</span>
@@ -199,11 +204,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* 5. Affiliate Links & Banners */}
             <button
               id="menu-referral-link"
-              onClick={() => {
-                onClose();
-                onOpenReferral();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
+              onClick={() => navigateTo('referral')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+                activeView === 'referral'
+                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <Link2 className="w-4 h-4 text-indigo-600" />
               <span>Affiliate Links & Banners</span>
@@ -216,11 +222,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* Payouts */}
             <button
               id="menu-payout-link"
-              onClick={() => {
-                onClose();
-                onOpenPayout();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
+              onClick={() => navigateTo('payout')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+                activeView === 'payout'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <History className="w-4 h-4 text-purple-600" />
               <span>Payouts & Withdrawals</span>
@@ -229,11 +236,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* KYC */}
             <button
               id="menu-kyc-link"
-              onClick={() => {
-                onClose();
-                onOpenKyc();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
+              onClick={() => navigateTo('kyc')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+                activeView === 'kyc'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
             >
               <CreditCard className="w-4 h-4 text-blue-600" />
               <div className="flex-1 flex items-center justify-between">
@@ -251,11 +259,12 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             {/* Customize Stats Button in Sidebar */}
             <button
               id="menu-simulator-link"
-              onClick={() => {
-                onClose();
-                onOpenSimulator();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold text-sm shadow-xs hover:opacity-95 transition-all text-left"
+              onClick={() => navigateTo('simulator')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-xs hover:opacity-95 transition-all text-left ${
+                activeView === 'simulator'
+                  ? 'bg-gradient-to-r from-purple-700 to-pink-700 ring-2 ring-purple-300'
+                  : 'bg-gradient-to-r from-pink-500 to-purple-600'
+              }`}
             >
               <Sliders className="w-4 h-4 text-white" />
               <div className="flex-1 flex items-center justify-between">

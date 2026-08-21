@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
-  Sparkles,
   CheckCircle2,
   Star,
   Users,
@@ -136,7 +136,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           <div className="text-[10px] text-amber-300/90 font-semibold tracking-wider uppercase pt-1">
-            ★ ONE TEAM. ONE VISION. ONE CELEBRATION. BE THERE. BE PROUD! ★
+            ONE TEAM · ONE VISION · ONE CELEBRATION · BE THERE, BE PROUD!
           </div>
         </div>
       </section>
@@ -147,6 +147,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <h2 className="text-2xl sm:text-3xl font-extrabold text-orange-500 tracking-tight">
             Explore Skill Grow Premier Courses
           </h2>
+
           <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-2xl font-normal">
             Welcome to Skill Grow's expert courses! Explore Skill Grow's distinctive selection of courses
             designed to enhance your knowledge and transform you into a highly skilled and industry-ready professional.
@@ -218,7 +219,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleEnrollClick(pkg)}
-                    className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-md active:scale-95 transition-all"
+                    className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-md active:scale-95 transition-all"
                   >
                     <span>Enroll Now</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -233,13 +234,18 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </button>
                 </div>
 
-                {/* Price Display */}
-                <div className="text-right">
-                  <div className="text-lg sm:text-xl font-black text-orange-500 tracking-tight leading-none">
+                {/* Right Side: Package Amount & Discount Amount */}
+                <div className="text-right flex flex-col items-end justify-center">
+                  <div className="text-xl sm:text-2xl font-black text-orange-500 tracking-tight leading-none">
                     ₹{pkg.price.toFixed(2)} /-
                   </div>
-                  <div className="text-xs text-gray-400 line-through mt-0.5">
-                    ₹{pkg.originalPrice.toFixed(2)}
+                  <div className="flex items-center space-x-1.5 mt-1">
+                    <span className="text-xs text-gray-400 line-through font-medium">
+                      ₹{pkg.originalPrice.toFixed(2)}
+                    </span>
+                    <span className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-1.5 py-0.5 rounded leading-none">
+                      {pkg.discountPercentage}% OFF
+                    </span>
                   </div>
                 </div>
 
@@ -258,7 +264,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-orange-100/70 flex items-center justify-center p-3 relative">
               <GraduationCap className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500" />
               <span className="absolute -bottom-1 -right-1 bg-white text-orange-600 p-1 rounded-full shadow-xs border border-orange-200">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Award className="w-3.5 h-3.5" />
               </span>
             </div>
             <div>

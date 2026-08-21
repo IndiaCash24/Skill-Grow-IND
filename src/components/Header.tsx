@@ -1,12 +1,12 @@
 import React from 'react';
-import { ShoppingCart, LayoutDashboard, Home, Sparkles } from 'lucide-react';
-import { SkillGrowIndLogo } from './SkillGrowIndLogo';
+import { ShoppingCart, LayoutDashboard, Home } from 'lucide-react';
+import { AppView } from './SidebarDrawer';
 
 interface HeaderProps {
   avatarUrl: string;
-  activeView: 'home' | 'dashboard';
+  activeView: AppView;
   cartCount?: number;
-  onSelectView: (view: 'home' | 'dashboard') => void;
+  onSelectView: (view: AppView) => void;
   onOpenMenu: () => void;
   onOpenProfile: () => void;
 }
@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         
         {/* Quick View Switch Button */}
-        {activeView === 'home' ? (
+        {activeView !== 'dashboard' ? (
           <button
             id="nav-to-dashboard-btn"
             onClick={() => onSelectView('dashboard')}
