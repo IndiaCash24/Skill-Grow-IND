@@ -143,15 +143,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] flex flex-col font-['Poppins',sans-serif] selection:bg-pink-500 selection:text-white">
+    <div className="min-h-screen bg-[#F9FAFB] sm:bg-[#EAEDF2] flex flex-col font-['Poppins',sans-serif] selection:bg-pink-500 selection:text-white">
       {/* Main Content Area */}
-      <main className="flex-1 flex justify-center items-start p-0 sm:p-4 md:py-6">
+      <main className="flex-1 flex justify-center items-stretch sm:items-center p-0 sm:p-4 md:py-6">
         <div
           id="main-app-container"
-          className={`w-full bg-white transition-all duration-300 flex flex-col ${
+          className={`w-full bg-[#F9FAFB] transition-all duration-300 flex flex-col min-h-screen sm:min-h-0 ${
             isMobileFrame
-              ? 'max-w-[430px] h-[92vh] max-h-[900px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] sm:border-[8px] sm:border-slate-800 overflow-hidden'
-              : 'max-w-4xl min-h-[85vh] sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
+              ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] sm:border-[8px] sm:border-slate-800 overflow-hidden'
+              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
           }`}
         >
           {/* Header Component */}
@@ -164,7 +164,7 @@ export default function App() {
           {/* Pull to Refresh Container */}
           <PullToRefresh onRefresh={handleSwipeRefresh}>
             {/* Main Dashboard Screen View */}
-            <div className="p-3.5 sm:p-5 space-y-4 sm:space-y-5 bg-[#F9FAFB]">
+            <div className="p-3.5 sm:p-5 pb-8 sm:pb-6 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
               {/* Top Profile Card with Ribbon & Copy ID */}
               <ProfileCard
                 profile={profile}
