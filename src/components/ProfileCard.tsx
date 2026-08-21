@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Sparkles, Camera } from 'lucide-react';
+import { Copy, Check, Sparkles, BadgeCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProfile } from '../types';
 
@@ -72,9 +72,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile
             />
           </div>
 
-          {/* Camera edit badge */}
-          <div className="absolute bottom-1 right-1 bg-pink-600 text-white p-1.5 rounded-full shadow-md hover:bg-pink-700 transition-colors border border-white">
-            <Camera className="w-3.5 h-3.5" />
+          {/* Official Verified Badge */}
+          <div
+            id="profile-verified-badge"
+            className="absolute bottom-1 right-1 bg-gradient-to-tr from-sky-500 via-blue-600 to-indigo-600 text-white p-1 rounded-full shadow-md border-2 border-white flex items-center justify-center"
+            title="Verified Official Affiliate"
+          >
+            <BadgeCheck className="w-4 h-4 text-white" />
           </div>
         </div>
       </div>
