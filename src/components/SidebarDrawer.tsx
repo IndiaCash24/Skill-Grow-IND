@@ -28,7 +28,6 @@ interface SidebarDrawerProps {
   isMobileFrame: boolean;
   onToggleMobileFrame: () => void;
   onResetDefaults: () => void;
-  onRefresh?: () => void;
   onOpenReferral: () => void;
   onOpenLeaderboard: () => void;
   onOpenCourses: () => void;
@@ -45,7 +44,6 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isMobileFrame,
   onToggleMobileFrame,
   onResetDefaults,
-  onRefresh,
   onOpenReferral,
   onOpenLeaderboard,
   onOpenCourses,
@@ -216,21 +214,6 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                 <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold">Edit</span>
               </div>
             </button>
-
-            {/* Refresh Live Counting in Sidebar */}
-            {onRefresh && (
-              <button
-                id="menu-refresh-data-link"
-                onClick={() => {
-                  onClose();
-                  onRefresh();
-                }}
-                className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-xs transition-colors text-left border border-emerald-200"
-              >
-                <RefreshCw className="w-4 h-4 text-emerald-600 animate-spin-slow" />
-                <span>Refresh Live Earnings (6s Count)</span>
-              </button>
-            )}
 
             {/* Reset Stats to Default in Sidebar */}
             <button

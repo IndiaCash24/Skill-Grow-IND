@@ -10,7 +10,6 @@ import { ReferralModal } from './components/ReferralModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { CoursesModal } from './components/CoursesModal';
 import { KycModal } from './components/KycModal';
-import { PullToRefresh } from './components/PullToRefresh';
 import {
   initialProfile,
   initialEarnings,
@@ -36,9 +35,6 @@ export default function App() {
     const saved = localStorage.getItem('skillgrowind_transactions') || localStorage.getItem('richind_transactions');
     return saved ? JSON.parse(saved) : sampleTransactions;
   });
-
-  // Swipe refresh counter key (re-triggers count-up animation without wiping data)
-  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   // Modal / Drawer state
   const [activeDetailsCard, setActiveDetailsCard] = useState<
@@ -135,23 +131,16 @@ export default function App() {
     setTransactions(sampleTransactions);
   };
 
-  const handleSwipeRefresh = async () => {
-    // Simulate real-time sync delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    // Trigger the smooth 6-second boom count up with the current updated profile & earnings
-    setRefreshKey((prev) => prev + 1);
-  };
-
   return (
     <div className="min-h-screen bg-[#F9FAFB] sm:bg-[#EAEDF2] flex flex-col font-['Poppins',sans-serif] selection:bg-pink-500 selection:text-white">
       {/* Main Content Area */}
-      <main className="flex-1 flex justify-center items-stretch sm:items-center p-0 sm:p-4 md:py-6">
+      <main className="flex-1 flex justify-center items-start p-0 sm:p-4 md:py-6">
         <div
           id="main-app-container"
-          className={`w-full bg-[#F9FAFB] transition-all duration-300 flex flex-col min-h-screen sm:min-h-0 ${
+          className={`w-full bg-[#F9FAFB] transition-all duration-300 flex flex-col ${
             isMobileFrame
-              ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] sm:border-[8px] sm:border-slate-800 overflow-hidden'
-              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
+              ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] sm:border-[8px] sm:border-slate-800'
+              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200'
           }`}
         >
           {/* Header Component */}
@@ -161,24 +150,20 @@ export default function App() {
             onOpenProfile={() => setIsSimulatorOpen(true)}
           />
 
-          {/* Pull to Refresh Container */}
-          <PullToRefresh onRefresh={handleSwipeRefresh}>
-            {/* Main Dashboard Screen View */}
-            <div className="p-3.5 sm:p-5 pb-8 sm:pb-6 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
-              {/* Top Profile Card with Ribbon & Copy ID */}
-              <ProfileCard
-                profile={profile}
-                onEditProfile={() => setIsSimulatorOpen(true)}
-              />
+          {/* Main Dashboard Screen View */}
+          <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
+            {/* Top Profile Card with Ribbon & Copy ID */}
+            <ProfileCard
+              profile={profile}
+              onEditProfile={() => setIsSimulatorOpen(true)}
+            />
 
-              {/* 5 Earning Metric Cards Grid */}
-              <EarningCardsGrid
-                earnings={earnings}
-                refreshKey={refreshKey}
-                onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
-              />
-            </div>
-          </PullToRefresh>
+            {/* 5 Earning Metric Cards Grid */}
+            <EarningCardsGrid
+              earnings={earnings}
+              onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
+            />
+          </div>
         </div>
       </main>
 
@@ -199,7 +184,6 @@ export default function App() {
         isMobileFrame={isMobileFrame}
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
         onResetDefaults={handleResetToScreenshot}
-        onRefresh={handleSwipeRefresh}
         onOpenReferral={() => setIsReferralOpen(true)}
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         onOpenCourses={() => setIsCoursesOpen(true)}
