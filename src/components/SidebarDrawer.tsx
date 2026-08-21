@@ -2,6 +2,7 @@ import React from 'react';
 import {
   X,
   LayoutDashboard,
+  Home,
   Link2,
   Trophy,
   BookOpen,
@@ -16,6 +17,7 @@ import {
   RefreshCw,
   Smartphone,
   Maximize2,
+  Package,
 } from 'lucide-react';
 import { UserProfile, EarningStats } from '../types';
 import { SkillGrowIndLogo } from './SkillGrowIndLogo';
@@ -23,6 +25,8 @@ import { SkillGrowIndLogo } from './SkillGrowIndLogo';
 interface SidebarDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  activeView: 'home' | 'dashboard';
+  onSelectView: (view: 'home' | 'dashboard') => void;
   profile: UserProfile;
   earnings: EarningStats;
   isMobileFrame: boolean;
@@ -39,6 +43,8 @@ interface SidebarDrawerProps {
 export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isOpen,
   onClose,
+  activeView,
+  onSelectView,
   profile,
   earnings,
   isMobileFrame,
@@ -70,7 +76,15 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
         >
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-slate-50/70">
-            <SkillGrowIndLogo size="sm" />
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-1">
+                <span className="font-['Poppins'] font-black text-lg text-orange-500">Skill</span>
+                <span className="font-['Poppins'] font-black text-lg text-slate-900">Grow</span>
+                <span className="text-[10px] font-bold bg-slate-900 text-white px-1.5 py-0.2 rounded">IND</span>
+              </div>
+              <span className="text-[8px] text-gray-500 italic font-serif">Earn knowledge ! Earn money</span>
+            </div>
+
             <button
               id="close-sidebar-btn"
               onClick={onClose}
@@ -83,20 +97,20 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
           </div>
 
           {/* User mini summary */}
-          <div className="p-5 bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white">
+          <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white">
             <div className="flex items-center space-x-3.5">
               <img
                 src={profile.avatarUrl}
                 alt={profile.name}
-                className="w-12 h-12 rounded-full object-cover border-2 border-pink-400 shadow-md"
+                className="w-12 h-12 rounded-full object-cover border-2 border-orange-400 shadow-md"
                 referrerPolicy="no-referrer"
               />
               <div className="overflow-hidden">
                 <h4 className="font-bold text-sm text-white truncate tracking-wide">
                   {profile.name}
                 </h4>
-                <p className="text-[11px] text-purple-200">ID: {profile.referralId}</p>
-                <div className="inline-flex items-center space-x-1 mt-1 bg-pink-500/30 text-pink-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-pink-400/30">
+                <p className="text-[11px] text-orange-200">ID: {profile.referralId}</p>
+                <div className="inline-flex items-center space-x-1 mt-1 bg-orange-500/30 text-orange-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-400/30">
                   <Sparkles className="w-2.5 h-2.5" />
                   <span>{profile.packageTier}</span>
                 </div>
@@ -104,7 +118,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             </div>
 
             <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-              <span className="text-purple-200">Total Earned:</span>
+              <span className="text-gray-300">Total Earned:</span>
               <span className="font-bold text-emerald-400 text-sm">
                 ₹ {earnings.allTime.toLocaleString('en-IN')}
               </span>
@@ -117,27 +131,59 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               Navigation
             </p>
 
+            {/* 1. Home Page Link */}
             <button
-              id="menu-dashboard-link"
-              onClick={onClose}
-              className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl bg-pink-50 text-pink-600 font-semibold text-sm transition-colors text-left"
-            >
-              <LayoutDashboard className="w-4 h-4 text-pink-600" />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              id="menu-referral-link"
+              id="menu-home-link"
               onClick={() => {
                 onClose();
-                onOpenReferral();
+                onSelectView('home');
+              }}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
+                activeView === 'home'
+                  ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                  : 'text-gray-700 hover:bg-gray-100 font-medium'
+              }`}
+            >
+              <Home className={`w-4 h-4 ${activeView === 'home' ? 'text-orange-600' : 'text-slate-600'}`} />
+              <span>Home Page (Courses & Summit)</span>
+            </button>
+
+            {/* 2. Earning Dashboard Link (High Priority Request!) */}
+            <button
+              id="menu-dashboard-link"
+              onClick={() => {
+                onClose();
+                onSelectView('dashboard');
+              }}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
+                activeView === 'dashboard'
+                  ? 'bg-pink-50 text-pink-600 border border-pink-200 shadow-xs'
+                  : 'text-gray-800 hover:bg-pink-50/70 hover:text-pink-600 font-bold bg-pink-50/40'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4 text-pink-600" />
+              <div className="flex-1 flex items-center justify-between">
+                <span>Earning Dashboard</span>
+                <span className="text-[10px] bg-pink-500 text-white px-2 py-0.5 rounded-full font-bold">
+                  Live
+                </span>
+              </div>
+            </button>
+
+            {/* 3. Packages & Courses */}
+            <button
+              id="menu-courses-link"
+              onClick={() => {
+                onClose();
+                onOpenCourses();
               }}
               className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
             >
-              <Link2 className="w-4 h-4 text-indigo-600" />
-              <span>Affiliate Links & Banners</span>
+              <BookOpen className="w-4 h-4 text-emerald-600" />
+              <span>Packages & Training</span>
             </button>
 
+            {/* 4. Leaderboard */}
             <button
               id="menu-leaderboard-link"
               onClick={() => {
@@ -150,22 +196,24 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <span>All India Leaderboard</span>
             </button>
 
+            {/* 5. Affiliate Links & Banners */}
             <button
-              id="menu-courses-link"
+              id="menu-referral-link"
               onClick={() => {
                 onClose();
-                onOpenCourses();
+                onOpenReferral();
               }}
               className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-700 hover:bg-gray-100 font-medium text-sm transition-colors text-left"
             >
-              <BookOpen className="w-4 h-4 text-emerald-600" />
-              <span>My Courses / Training</span>
+              <Link2 className="w-4 h-4 text-indigo-600" />
+              <span>Affiliate Links & Banners</span>
             </button>
 
             <p className="px-3 pt-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
               Finance & Profile
             </p>
 
+            {/* Payouts */}
             <button
               id="menu-payout-link"
               onClick={() => {
@@ -178,6 +226,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <span>Payouts & Withdrawals</span>
             </button>
 
+            {/* KYC */}
             <button
               id="menu-kyc-link"
               onClick={() => {
@@ -259,7 +308,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             >
               <div className="flex items-center space-x-2">
                 <PhoneCall className="w-3.5 h-3.5" />
-                <span>Skill Grow IND Official WhatsApp</span>
+                <span>Skill Grow Official WhatsApp</span>
               </div>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
@@ -278,4 +327,3 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     </div>
   );
 };
-

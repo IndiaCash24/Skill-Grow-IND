@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
+import { HomePage } from './components/HomePage';
 import { ProfileCard } from './components/ProfileCard';
 import { EarningCardsGrid } from './components/EarningCardsGrid';
 import { DetailsModal } from './components/DetailsModal';
@@ -20,6 +21,9 @@ import {
 import { UserProfile, EarningStats, Transaction } from './types';
 
 export default function App() {
+  // Navigation active view: 'home' | 'dashboard'
+  const [activeView, setActiveView] = useState<'home' | 'dashboard'>('home');
+
   // State management with localStorage fallback
   const [profile, setProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('skillgrowind_profile') || localStorage.getItem('richind_profile');
@@ -132,38 +136,53 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] sm:bg-[#EAEDF2] flex flex-col font-['Poppins',sans-serif] selection:bg-pink-500 selection:text-white">
-      {/* Main Content Area */}
+    <div className="min-h-screen bg-[#F9FAFB] sm:bg-[#EAEDF2] flex flex-col font-['Poppins',sans-serif] selection:bg-orange-500 selection:text-white">
+      {/* Main Content Container */}
       <main className="flex-1 flex justify-center items-start p-0 sm:p-4 md:py-6">
         <div
           id="main-app-container"
-          className={`w-full bg-[#F9FAFB] transition-all duration-300 flex flex-col ${
+          className={`w-full bg-[#FFFFFF] transition-all duration-300 flex flex-col ${
             isMobileFrame
-              ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] sm:border-[8px] sm:border-slate-800'
-              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200'
+              ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] sm:border-[8px] sm:border-slate-800 overflow-hidden'
+              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
           }`}
         >
           {/* Header Component */}
           <Header
             avatarUrl={profile.avatarUrl}
+            activeView={activeView}
+            onSelectView={(view) => setActiveView(view)}
             onOpenMenu={() => setIsSidebarOpen(true)}
             onOpenProfile={() => setIsSimulatorOpen(true)}
           />
 
-          {/* Main Dashboard Screen View */}
-          <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
-            {/* Top Profile Card with Ribbon & Copy ID */}
-            <ProfileCard
-              profile={profile}
-              onEditProfile={() => setIsSimulatorOpen(true)}
+          {/* Conditional View Rendering */}
+          {activeView === 'home' ? (
+            /* Home Page View (Detailed from top to bottom matching screenshots) */
+            <HomePage
+              onNavigateToDashboard={() => {
+                setActiveView('dashboard');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenCourses={() => setIsCoursesOpen(true)}
+              onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
             />
+          ) : (
+            /* Earning Dashboard View */
+            <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
+              {/* Top Profile Card with Verified Badge & Copy ID */}
+              <ProfileCard
+                profile={profile}
+                onEditProfile={() => setIsSimulatorOpen(true)}
+              />
 
-            {/* 5 Earning Metric Cards Grid */}
-            <EarningCardsGrid
-              earnings={earnings}
-              onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
-            />
-          </div>
+              {/* 5 Earning Metric Cards Grid */}
+              <EarningCardsGrid
+                earnings={earnings}
+                onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
+              />
+            </div>
+          )}
         </div>
       </main>
 
@@ -179,6 +198,11 @@ export default function App() {
       <SidebarDrawer
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        activeView={activeView}
+        onSelectView={(view) => {
+          setActiveView(view);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         profile={profile}
         earnings={earnings}
         isMobileFrame={isMobileFrame}
