@@ -143,7 +143,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </button>
 
             <button
-              onClick={onNavigateToDashboard}
+              onClick={() => handleProtectedAction(onNavigateToDashboard)}
               className="bg-white/15 hover:bg-white/25 text-white font-semibold px-5 py-2.5 rounded-full border border-white/20 transition-all flex items-center space-x-1.5"
             >
               <LayoutDashboard className="w-4 h-4 text-pink-300" />

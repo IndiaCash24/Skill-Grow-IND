@@ -359,14 +359,31 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
-            <button
-              onClick={onClose}
-              type="button"
-              className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
+            {isLoggedIn ? (
+              <button
+                onClick={() => {
+                  onClose();
+                  onLogout();
+                }}
+                type="button"
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenLogin();
+                }}
+                type="button"
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5 rotate-180" />
+                <span>Login / Sign Up</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

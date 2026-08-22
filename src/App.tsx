@@ -11,6 +11,8 @@ import { ReferralPage } from './components/ReferralPage';
 import { PayoutPage } from './components/PayoutPage';
 import { KycPage } from './components/KycPage';
 import { SimulatorPage } from './components/SimulatorPage';
+import { LoginPage } from './components/LoginPage';
+import { RegisterPage } from './components/RegisterPage';
 import {
   initialProfile,
   initialEarnings,
@@ -21,8 +23,25 @@ import {
 import { UserProfile, EarningStats, Transaction } from './types';
 
 export default function App() {
-  // Navigation active view: 'home' | 'dashboard' | 'courses' | 'leaderboard' | 'referral' | 'payout' | 'kyc' | 'simulator'
-  const [activeView, setActiveView] = useState<AppView>('home');
+  // Authentication status with localStorage persistence
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    const saved = localStorage.getItem('skillgrow_is_logged_in');
+    return saved === 'true';
+  });
+
+  // Navigation active view with localStorage persistence
+  const [activeView, setActiveView] = useState<AppView>(() => {
+    const savedView = localStorage.getItem('skillgrow_active_view') as AppView | null;
+    const loggedIn = localStorage.getItem('skillgrow_is_logged_in') === 'true';
+    if (savedView) {
+      // If user is guest and saved view is protected, fallback to 'home' or 'login'
+      if (!loggedIn && savedView !== 'home' && savedView !== 'login' && savedView !== 'register') {
+        return 'home';
+      }
+      return savedView;
+    }
+    return 'home';
+  });
 
   // State management with localStorage fallback
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -45,11 +64,45 @@ export default function App() {
     'today' | 'sevenDays' | 'thirtyDays' | 'allTime' | 'passive' | null
   >(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // View mode: 'mobile-frame' or 'fluid'
   const [isMobileFrame, setIsMobileFrame] = useState(true);
 
+  // Seed default registered users & referral code SGIND0023 if not yet initialized
+  useEffect(() => {
+    try {
+      const existing = localStorage.getItem('skillgrow_registered_users');
+      if (!existing) {
+        const defaultUsers = [
+          {
+            id: 'GK-154893',
+            referralId: 'SGIND0023',
+            name: 'Skill Grow Leader',
+            email: 'admin@skillgrow.com',
+            phone: '9876543210',
+            state: 'Delhi NCR',
+            password: 'password123',
+            sponsorId: 'SGIND0001',
+            createdAt: new Date().toISOString(),
+          },
+        ];
+        localStorage.setItem('skillgrow_registered_users', JSON.stringify(defaultUsers));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Sync to local storage
+  useEffect(() => {
+    localStorage.setItem('skillgrow_active_view', activeView);
+  }, [activeView]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrow_is_logged_in', String(isLoggedIn));
+  }, [isLoggedIn]);
+
   useEffect(() => {
     localStorage.setItem('skillgrowind_profile', JSON.stringify(profile));
   }, [profile]);
@@ -62,7 +115,53 @@ export default function App() {
     localStorage.setItem('skillgrowind_transactions', JSON.stringify(transactions));
   }, [transactions]);
 
-  // Handlers
+  // Protected View Gate
+  const handleNavigate = (view: AppView) => {
+    if (view === 'home' || view === 'login' || view === 'register') {
+      setActiveView(view);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (!isLoggedIn) {
+      setActiveView('login');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setActiveView(view);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRequireLogin = () => {
+    setActiveView('login');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLoginSuccess = (userProfile?: UserProfile) => {
+    setIsLoggedIn(true);
+    setIsLoginModalOpen(false);
+    if (userProfile) {
+      setProfile(userProfile);
+    }
+    setActiveView('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRegisterSuccess = (userProfile: UserProfile) => {
+    setIsLoggedIn(true);
+    setProfile(userProfile);
+    setActiveView('dashboard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setActiveView('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handlers for modifying profile/earnings
   const handleUpdateProfile = (updated: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...updated }));
   };
@@ -141,47 +240,80 @@ export default function App() {
               : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
           }`}
         >
-          {/* Header Component */}
-          <Header
-            avatarUrl={profile.avatarUrl}
-            activeView={activeView}
-            onSelectView={(view) => {
-              setActiveView(view);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenMenu={() => setIsSidebarOpen(true)}
-            onOpenProfile={() => {
-              setActiveView('simulator');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-
-          {/* Conditional View Rendering */}
-          {activeView === 'home' && (
-            <HomePage
-              onNavigateToDashboard={() => {
-                setActiveView('dashboard');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+          {/* Header Component (Visible across views except standalone register/login if preferred, or shown everywhere) */}
+          {activeView !== 'login' && activeView !== 'register' && (
+            <Header
+              avatarUrl={profile.avatarUrl}
+              activeView={activeView}
+              isLoggedIn={isLoggedIn}
+              onSelectView={handleNavigate}
+              onOpenMenu={() => setIsSidebarOpen(true)}
+              onOpenProfile={() => {
+                handleNavigate('simulator');
               }}
-              onOpenCourses={() => {
-                setActiveView('courses');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              onOpenLeaderboard={() => {
-                setActiveView('leaderboard');
+              onOpenLogin={() => {
+                setActiveView('login');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             />
           )}
 
+          {/* 1. LOGIN VIEW (Screenshots 3) */}
+          {activeView === 'login' && (
+            <LoginPage
+              onLoginSuccess={handleLoginSuccess}
+              onNavigateToRegister={() => {
+                setActiveView('register');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onCloseOrHome={() => {
+                setActiveView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
+
+          {/* 2. REGISTER VIEW (Screenshots 1 & 2) */}
+          {activeView === 'register' && (
+            <RegisterPage
+              onRegisterSuccess={handleRegisterSuccess}
+              onNavigateToLogin={() => {
+                setActiveView('login');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onNavigateToHome={() => {
+                setActiveView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              initialReferralCode="SGIND0023"
+            />
+          )}
+
+          {/* 3. HOME VIEW (Public: Anyone can explore) */}
+          {activeView === 'home' && (
+            <HomePage
+              isLoggedIn={isLoggedIn}
+              onRequireLogin={handleRequireLogin}
+              onNavigateToDashboard={() => {
+                handleNavigate('dashboard');
+              }}
+              onOpenCourses={() => {
+                handleNavigate('courses');
+              }}
+              onOpenLeaderboard={() => {
+                handleNavigate('leaderboard');
+              }}
+            />
+          )}
+
+          {/* 4. DASHBOARD VIEW (Protected) */}
           {activeView === 'dashboard' && (
             <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
               {/* Top Profile Card with Verified Badge & Copy ID */}
               <ProfileCard
                 profile={profile}
                 onEditProfile={() => {
-                  setActiveView('simulator');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  handleNavigate('simulator');
                 }}
               />
 
@@ -193,62 +325,53 @@ export default function App() {
             </div>
           )}
 
+          {/* 5. COURSES VIEW (Protected) */}
           {activeView === 'courses' && (
             <CoursesPage
               courses={coursesData}
               profile={profile}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
 
+          {/* 6. LEADERBOARD VIEW (Protected) */}
           {activeView === 'leaderboard' && (
             <LeaderboardPage
               users={leaderboardData}
               profile={profile}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
 
+          {/* 7. REFERRAL VIEW (Protected) */}
           {activeView === 'referral' && (
             <ReferralPage
               profile={profile}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
 
+          {/* 8. PAYOUT VIEW (Protected) */}
           {activeView === 'payout' && (
             <PayoutPage
               profile={profile}
               earnings={earnings}
               transactions={transactions}
               onRequestWithdrawal={handleRequestWithdrawal}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
 
+          {/* 9. KYC VIEW (Protected) */}
           {activeView === 'kyc' && (
             <KycPage
               profile={profile}
               onUpdateKyc={handleUpdateKyc}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
 
+          {/* 10. SIMULATOR / PROFILE EDIT VIEW (Protected) */}
           {activeView === 'simulator' && (
             <SimulatorPage
               profile={profile}
@@ -257,10 +380,7 @@ export default function App() {
               onUpdateEarnings={handleUpdateEarnings}
               onAddTransaction={handleAddTransaction}
               onResetDefaults={handleResetToScreenshot}
-              onNavigate={(view) => {
-                setActiveView(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigate={handleNavigate}
             />
           )}
         </div>
@@ -274,8 +394,7 @@ export default function App() {
         onClose={() => setActiveDetailsCard(null)}
         onRequestPayout={() => {
           setActiveDetailsCard(null);
-          setActiveView('payout');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          handleNavigate('payout');
         }}
       />
 
@@ -283,16 +402,35 @@ export default function App() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         activeView={activeView}
-        onSelectView={(view) => {
-          setActiveView(view);
+        isLoggedIn={isLoggedIn}
+        onSelectView={handleNavigate}
+        onOpenLogin={() => {
+          setIsSidebarOpen(false);
+          setActiveView('login');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onLogout={handleLogout}
         profile={profile}
         earnings={earnings}
         isMobileFrame={isMobileFrame}
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
         onResetDefaults={handleResetToScreenshot}
       />
+
+      {/* Optional Login Modal Overlay */}
+      {isLoginModalOpen && (
+        <LoginPage
+          isModal
+          onLoginSuccess={handleLoginSuccess}
+          onNavigateToRegister={() => {
+            setIsLoginModalOpen(false);
+            setActiveView('register');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onCloseOrHome={() => setIsLoginModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
+
