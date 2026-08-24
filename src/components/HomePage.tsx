@@ -28,6 +28,7 @@ import {
 import { coursePackages, CoursePackage } from '../data/coursesData';
 import { PackageBox3D } from './PackageBox3D';
 import { FloatingNeedHelp } from './FloatingNeedHelp';
+import { HomeBannerCarousel } from './HomeBannerCarousel';
 import confetti from 'canvas-confetti';
 
 interface HomePageProps {
@@ -78,84 +79,16 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div id="skill-grow-home-page" className="w-full bg-[#FFFFFF] text-slate-900 font-['Poppins',sans-serif]">
       
-      {/* 1. TOP EVENT BANNER / ANNUAL MEETUP HERO (From Screenshot 1) */}
-      <section id="event-meetup-hero" className="w-full bg-gradient-to-r from-[#111827] via-[#1E1B4B] to-[#311042] text-white relative overflow-hidden border-b border-orange-500/30">
-        {/* Glow & Sparkles accents */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="px-4 py-6 sm:py-8 max-w-4xl mx-auto flex flex-col items-center text-center space-y-4">
-          {/* Main Event Headline */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-center space-x-1 text-xs font-semibold text-gray-300">
-              <span>Skill</span>
-              <span className="text-orange-400 font-bold">Grow</span>
-              <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.2 rounded font-bold">IND</span>
-              <span className="text-gray-400 italic ml-1">· Celebrating Growth, Together!</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white uppercase drop-shadow-md">
-              Skill Grow <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">Mega Meetup</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto font-normal">
-              Let's Celebrate the Journey, Recognize the Efforts & Plan the Future Together!
-            </p>
-          </div>
-
-          {/* Event Feature Badges Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full max-w-2xl pt-2">
-            <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10 flex flex-col items-center text-center">
-              <Zap className="w-4 h-4 text-amber-400 mb-1" />
-              <span className="text-[11px] font-bold text-white">Powerful Sessions</span>
-              <span className="text-[9px] text-gray-300">Learn. Apply. Grow.</span>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10 flex flex-col items-center text-center">
-              <Users className="w-4 h-4 text-emerald-400 mb-1" />
-              <span className="text-[11px] font-bold text-white">Meet & Network</span>
-              <span className="text-[9px] text-gray-300">Connect with Leaders</span>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10 flex flex-col items-center text-center">
-              <Award className="w-4 h-4 text-yellow-400 mb-1" />
-              <span className="text-[11px] font-bold text-white">Recognition</span>
-              <span className="text-[9px] text-gray-300">Celebrate Achievers</span>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10 flex flex-col items-center text-center">
-              <TrendingUp className="w-4 h-4 text-blue-400 mb-1" />
-              <span className="text-[11px] font-bold text-white">Future Roadmap</span>
-              <span className="text-[9px] text-gray-300">New Opportunities</span>
-            </div>
-          </div>
-
-          {/* Action Bar */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5 text-xs">
-            <button
-              onClick={() => {
-                const coursesSection = document.getElementById('premier-courses-section');
-                coursesSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition-transform active:scale-95 flex items-center space-x-1.5"
-            >
-              <span>Explore All Packages</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => handleProtectedAction(onNavigateToDashboard)}
-              className="bg-white/15 hover:bg-white/25 text-white font-semibold px-5 py-2.5 rounded-full border border-white/20 transition-all flex items-center space-x-1.5"
-            >
-              <LayoutDashboard className="w-4 h-4 text-pink-300" />
-              <span>Affiliate Dashboard ➔</span>
-            </button>
-          </div>
-
-          <div className="text-[10px] text-amber-300/90 font-semibold tracking-wider uppercase pt-1">
-            ONE TEAM · ONE VISION · ONE CELEBRATION · BE THERE, BE PROUD!
-          </div>
-        </div>
-      </section>
+      {/* 1. TOP INTERACTIVE ROTATING BANNER CAROUSEL (3 Professional High-Converting Banners) */}
+      <HomeBannerCarousel
+        isLoggedIn={isLoggedIn}
+        onNavigateToDashboard={onNavigateToDashboard}
+        onOpenLogin={onRequireLogin}
+        onScrollToPackages={() => {
+          const coursesSection = document.getElementById('premier-courses-section');
+          coursesSection?.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
 
       {/* 2. EXPLORE PREMIER COURSES SECTION HEADER (From Screenshot 1) */}
       <section id="premier-courses-section" className="px-4 pt-8 pb-4 max-w-4xl mx-auto">
