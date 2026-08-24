@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowLeft, Headphones } from 'lucide-react';
 import { UserProfile } from '../types';
+import { registerUserInFirestore } from '../lib/firestoreService';
 
 interface RegisterPageProps {
   onRegisterSuccess: (userProfile: UserProfile) => void;
@@ -47,7 +48,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   onNavigateToHome,
   initialReferralCode = 'SGIND0023',
 }) => {
-  const [gkId, setGkId] = useState(initialReferralCode);
+  const [sponsorCode, setSponsorCode] = useState(initialReferralCode);
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [emailId, setEmailId] = useState('');
@@ -88,16 +89,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     setErrorMessage('');
     setSuccessMessage('');
 
-    const trimmedGkId = gkId.trim().toUpperCase();
+    const trimmedSponsorCode = sponsorCode.trim().toUpperCase();
 
     // 1. Referral code validation (Strict Requirement)
-    if (!trimmedGkId) {
-      setErrorMessage('GK ID / Referral Code is mandatory! Enter referral code: SGIND0023');
+    if (!trimmedSponsorCode) {
+      setErrorMessage('SG ID / Referral Code is mandatory! Enter referral code: SGIND0023');
       return;
     }
 
-    if (!validateReferralCode(trimmedGkId)) {
-      setErrorMessage('Invalid Referral / GK ID! Please enter valid referral code: SGIND0023');
+    if (!validateReferralCode(trimmedSponsorCode)) {
+      setErrorMessage('Invalid Referral / SG ID! Please enter valid referral code: SGIND0023');
       return;
     }
 
@@ -143,9 +144,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
-    // Generate unique new user GK ID
+    // Generate unique new user SG ID
     const randomDigits = Math.floor(100000 + Math.random() * 900000);
-    const newUserId = `GK-${randomDigits}`;
+    const newUserId = `SG-${randomDigits}`;
     const newReferralId = `SGIND${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newUserProfile: UserProfile = {
@@ -160,15 +161,29 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         month: 'long',
         year: 'numeric',
       }),
-      sponsorName: trimmedGkId === 'SGIND0023' ? 'Skill Grow Official Sponsor' : 'Skill Grow Partner',
-      sponsorId: trimmedGkId,
+      sponsorName: trimmedSponsorCode === 'SGIND0023' ? 'Skill Grow Official Sponsor' : 'Skill Grow Partner',
+      sponsorId: trimmedSponsorCode,
       kycStatus: 'Pending',
       upiId: '',
       bankAccount: '',
       ifscCode: '',
     };
 
-    // Save to registered users list in localStorage
+    // 1. Write to Live Cloud Firestore Database
+    registerUserInFirestore({
+      uid: newUserId,
+      name: fullName.trim(),
+      email: emailId.trim().toLowerCase(),
+      phone: phoneNumber.trim(),
+      userCode: newReferralId,
+      sponsorCode: trimmedSponsorCode,
+      state: state,
+      packageTier: 'SILVER PACKAGE',
+    }).catch((err) => {
+      console.warn('Firestore background write error:', err);
+    });
+
+    // 2. Also keep local persistence for offline sync
     try {
       const storedUsersRaw = localStorage.getItem('skillgrow_registered_users');
       const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
@@ -180,7 +195,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         phone: phoneNumber.trim(),
         state: state,
         password: password,
-        sponsorId: trimmedGkId,
+        sponsorId: trimmedSponsorCode,
         createdAt: new Date().toISOString(),
       });
       localStorage.setItem('skillgrow_registered_users', JSON.stringify(registeredUsers));
@@ -188,7 +203,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       // ignore
     }
 
-    setSuccessMessage(`Registration Successful! Welcome to Skill Grow! Your ID is ${newUserId}`);
+    setSuccessMessage(`Registration Successful! Welcome to Skill Grow IND! Your ID is ${newUserId}`);
     setTimeout(() => {
       onRegisterSuccess(newUserProfile);
     }, 900);
@@ -216,16 +231,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         </button>
       </div>
 
-      {/* Main Registration Card (Matching Screenshot 1 & 2) */}
+      {/* Main Registration Card */}
       <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_10px_35px_-8px_rgba(0,0,0,0.08)] border border-[#F0EBE1] p-6 sm:p-8 space-y-5 relative">
         
         {/* Title and Subtitle */}
         <div className="space-y-1.5 text-left">
           <h1 className="text-2xl sm:text-[26px] font-extrabold text-[#D97706] tracking-tight">
-            Become GyanKamao Member
+            Become Skill Grow IND Member
           </h1>
           <p className="text-xs text-gray-600 leading-relaxed font-normal">
-            Top instructors from around the world teach millions of students on GyanKamao
+            Top instructors from around the world teach millions of students on Skill Grow IND
           </p>
         </div>
 
@@ -245,21 +260,21 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         )}
 
         <form onSubmit={handleRegister} className="space-y-4 text-left">
-          {/* GK ID / Referral Code */}
+          {/* SG ID / Referral Code */}
           <div className="space-y-1">
             <label className="block text-xs font-semibold text-gray-800">
-              GK ID <span className="text-xs text-gray-400 font-normal">(Sponsor / Referral Code)</span>
+              SG ID <span className="text-xs text-gray-400 font-normal">(Sponsor / Referral Code)</span>
             </label>
             <input
               type="text"
-              value={gkId}
-              onChange={(e) => setGkId(e.target.value)}
-              placeholder="GK-154893 or SGIND0023"
+              value={sponsorCode}
+              onChange={(e) => setSponsorCode(e.target.value)}
+              placeholder="SGIND0023"
               className="w-full px-4 py-3 bg-[#FAFAFA] border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
             <div className="flex items-center justify-between text-[10px] text-gray-500 pt-0.5">
               <span>Default Sponsor: <strong className="text-orange-600 font-bold">SGIND0023</strong></span>
-              {validateReferralCode(gkId) ? (
+              {validateReferralCode(sponsorCode) ? (
                 <span className="text-emerald-600 font-semibold flex items-center gap-0.5">
                   <CheckCircle2 className="w-3 h-3" /> Valid Sponsor
                 </span>

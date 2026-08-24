@@ -4,23 +4,46 @@ import { HomePage } from './components/HomePage';
 import { ProfileCard } from './components/ProfileCard';
 import { EarningCardsGrid } from './components/EarningCardsGrid';
 import { DetailsModal } from './components/DetailsModal';
-import { SidebarDrawer, AppView } from './components/SidebarDrawer';
-import { CoursesPage } from './components/CoursesPage';
+import { SidebarDrawer } from './components/SidebarDrawer';
+import { ProfilePage } from './components/ProfilePage';
+import { WithdrawalPage } from './components/WithdrawalPage';
+import { WithdrawalHistoryPage } from './components/WithdrawalHistoryPage';
+import { PackagesPage } from './components/PackagesPage';
+import { PackageCheckoutPage } from './components/PackageCheckoutPage';
 import { LeaderboardPage } from './components/LeaderboardPage';
 import { ReferralPage } from './components/ReferralPage';
-import { PayoutPage } from './components/PayoutPage';
-import { KycPage } from './components/KycPage';
-import { SimulatorPage } from './components/SimulatorPage';
+import { BankKycPage } from './components/BankKycPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
+import { AdminPage } from './components/admin/AdminPage';
 import {
   initialProfile,
   initialEarnings,
   sampleTransactions,
-  leaderboardData,
-  coursesData,
+  initialWithdrawals,
+  allPackages,
+  initialAdminUsers,
+  initialAdminOrders,
+  initialAdminKycList,
+  initialPlatformLinks,
+  initialAdminBanners,
+  initialAdminAnnouncements,
 } from './data/defaultData';
-import { UserProfile, EarningStats, Transaction } from './types';
+import {
+  UserProfile,
+  EarningStats,
+  Transaction,
+  WithdrawalRecord,
+  PackageItem,
+  AppView,
+  AdminUserRecord,
+  AdminOrderRecord,
+  AdminKycRecord,
+  AdminPlatformLinks,
+  AdminBanner,
+  AdminAnnouncement,
+} from './types';
+import { subscribeToUserData, requestWithdrawalInFirestore } from './lib/firestoreService';
 
 export default function App() {
   // Authentication status with localStorage persistence
@@ -34,8 +57,7 @@ export default function App() {
     const savedView = localStorage.getItem('skillgrow_active_view') as AppView | null;
     const loggedIn = localStorage.getItem('skillgrow_is_logged_in') === 'true';
     if (savedView) {
-      // If user is guest and saved view is protected, fallback to 'home' or 'login'
-      if (!loggedIn && savedView !== 'home' && savedView !== 'login' && savedView !== 'register') {
+      if (!loggedIn && savedView !== 'home' && savedView !== 'login' && savedView !== 'register' && savedView !== 'packages') {
         return 'home';
       }
       return savedView;
@@ -45,19 +67,62 @@ export default function App() {
 
   // State management with localStorage fallback
   const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('skillgrowind_profile') || localStorage.getItem('richind_profile');
+    const saved = localStorage.getItem('skillgrowind_profile');
     return saved ? JSON.parse(saved) : initialProfile;
   });
 
   const [earnings, setEarnings] = useState<EarningStats>(() => {
-    const saved = localStorage.getItem('skillgrowind_earnings') || localStorage.getItem('richind_earnings');
+    const saved = localStorage.getItem('skillgrowind_earnings');
     return saved ? JSON.parse(saved) : initialEarnings;
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_transactions') || localStorage.getItem('richind_transactions');
+    const saved = localStorage.getItem('skillgrowind_transactions');
     return saved ? JSON.parse(saved) : sampleTransactions;
   });
+
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_withdrawals');
+    return saved ? JSON.parse(saved) : initialWithdrawals;
+  });
+
+  const [packages, setPackages] = useState<PackageItem[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_packages');
+    return saved ? JSON.parse(saved) : allPackages;
+  });
+
+  // Admin Data Collections
+  const [adminUsers, setAdminUsers] = useState<AdminUserRecord[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_admin_users');
+    return saved ? JSON.parse(saved) : initialAdminUsers;
+  });
+
+  const [adminOrders, setAdminOrders] = useState<AdminOrderRecord[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_admin_orders');
+    return saved ? JSON.parse(saved) : initialAdminOrders;
+  });
+
+  const [adminKycList, setAdminKycList] = useState<AdminKycRecord[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_admin_kyc');
+    return saved ? JSON.parse(saved) : initialAdminKycList;
+  });
+
+  const [platformLinks, setPlatformLinks] = useState<AdminPlatformLinks>(() => {
+    const saved = localStorage.getItem('skillgrowind_platform_links');
+    return saved ? JSON.parse(saved) : initialPlatformLinks;
+  });
+
+  const [adminBanners, setAdminBanners] = useState<AdminBanner[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_admin_banners');
+    return saved ? JSON.parse(saved) : initialAdminBanners;
+  });
+
+  const [adminAnnouncements, setAdminAnnouncements] = useState<AdminAnnouncement[]>(() => {
+    const saved = localStorage.getItem('skillgrowind_admin_announcements');
+    return saved ? JSON.parse(saved) : initialAdminAnnouncements;
+  });
+
+  const [selectedCheckoutPkg, setSelectedCheckoutPkg] = useState<PackageItem>(packages[3] || allPackages[3]);
 
   // Modal / Drawer state
   const [activeDetailsCard, setActiveDetailsCard] = useState<
@@ -66,33 +131,8 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // View mode: 'mobile-frame' or 'fluid' (Default to fluid for responsive desktop/laptop views)
+  // View mode: 'mobile-frame' or 'fluid'
   const [isMobileFrame, setIsMobileFrame] = useState(false);
-
-  // Seed default registered users & referral code SGIND0023 if not yet initialized
-  useEffect(() => {
-    try {
-      const existing = localStorage.getItem('skillgrow_registered_users');
-      if (!existing) {
-        const defaultUsers = [
-          {
-            id: 'GK-154893',
-            referralId: 'SGIND0023',
-            name: 'Skill Grow Leader',
-            email: 'admin@skillgrow.com',
-            phone: '9876543210',
-            state: 'Delhi NCR',
-            password: 'password123',
-            sponsorId: 'SGIND0001',
-            createdAt: new Date().toISOString(),
-          },
-        ];
-        localStorage.setItem('skillgrow_registered_users', JSON.stringify(defaultUsers));
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
 
   // Sync to local storage
   useEffect(() => {
@@ -115,9 +155,69 @@ export default function App() {
     localStorage.setItem('skillgrowind_transactions', JSON.stringify(transactions));
   }, [transactions]);
 
-  // Protected View Gate
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_withdrawals', JSON.stringify(withdrawals));
+  }, [withdrawals]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_packages', JSON.stringify(packages));
+  }, [packages]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_admin_users', JSON.stringify(adminUsers));
+  }, [adminUsers]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_admin_orders', JSON.stringify(adminOrders));
+  }, [adminOrders]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_admin_kyc', JSON.stringify(adminKycList));
+  }, [adminKycList]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_platform_links', JSON.stringify(platformLinks));
+  }, [platformLinks]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_admin_banners', JSON.stringify(adminBanners));
+  }, [adminBanners]);
+
+  useEffect(() => {
+    localStorage.setItem('skillgrowind_admin_announcements', JSON.stringify(adminAnnouncements));
+  }, [adminAnnouncements]);
+
+  // Firestore Real-Time Sync
+  useEffect(() => {
+    if (isLoggedIn && profile.referralId) {
+      const unsubscribe = subscribeToUserData(
+        profile.referralId,
+        (dbProfile) => {
+          setProfile((prev) => ({ ...prev, ...dbProfile }));
+        },
+        (dbEarnings) => {
+          setEarnings((prev) => ({ ...prev, ...dbEarnings }));
+        }
+      );
+      return () => unsubscribe();
+    }
+  }, [isLoggedIn, profile.referralId]);
+
+  // Navigation Gate
   const handleNavigate = (view: AppView) => {
-    if (view === 'home' || view === 'login' || view === 'register') {
+    if (view === 'admin') {
+      const isSuperAdmin = profile.email.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+      if (!isSuperAdmin) {
+        setActiveView('home');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setActiveView('admin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (view === 'home' || view === 'login' || view === 'register' || view === 'packages') {
       setActiveView(view);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -161,72 +261,214 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handlers for modifying profile/earnings
+  // Handlers for modifying profile
   const handleUpdateProfile = (updated: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...updated }));
   };
 
-  const handleUpdateEarnings = (updated: Partial<EarningStats>) => {
-    setEarnings((prev) => ({ ...prev, ...updated }));
-  };
-
-  const handleAddTransaction = (amount: number, packageName: string, isPassive = false) => {
-    const newTxn: Transaction = {
-      id: `TXN-${Math.floor(10000 + Math.random() * 90000)}`,
-      leadName: isPassive ? 'Downline Partner Sale' : 'Direct Referral Sale',
-      packageName: packageName,
+  // Handler for withdrawal submission
+  const handleWithdrawalRequest = (amount: number, method: 'UPI' | 'Bank Transfer', destination: string) => {
+    const netAmount = amount * 0.95; // 5% TDS compliance
+    const newRecord: WithdrawalRecord = {
+      id: `WD-${Math.floor(100000 + Math.random() * 900000)}`,
       amount: amount,
-      type: isPassive ? 'PASSIVE_TIER_1' : 'DIRECT_COMMISSION',
-      date: 'Just now',
-      status: 'Completed',
+      status: 'Pending',
+      requestedAt: 'Today, Just now',
+      payoutMethod: method,
+      destination: destination,
     };
 
-    setTransactions((prev) => [newTxn, ...prev]);
-
-    setEarnings((prev) => ({
-      ...prev,
-      today: prev.today + amount,
-      sevenDays: prev.sevenDays + amount,
-      thirtyDays: prev.thirtyDays + amount,
-      allTime: prev.allTime + amount,
-      passiveIncome: isPassive ? prev.passiveIncome + amount : prev.passiveIncome,
-      walletBalance: prev.walletBalance + amount,
-    }));
-  };
-
-  const handleRequestWithdrawal = (amount: number) => {
     const newTxn: Transaction = {
-      id: `WD-${Math.floor(10000 + Math.random() * 90000)}`,
-      leadName: 'Self Withdrawal',
-      packageName: 'Bank Payout',
+      id: `TXN-WD-${Math.floor(10000 + Math.random() * 90000)}`,
+      leadName: 'Direct Bank Settlement',
+      packageName: `${method} Payout`,
       amount: amount,
       type: 'WITHDRAWAL',
       date: 'Just now',
+      status: 'Pending',
+    };
+
+    setWithdrawals((prev) => [newRecord, ...prev]);
+    setTransactions((prev) => [newTxn, ...prev]);
+
+    setEarnings((prev) => ({
+      ...prev,
+      walletBalance: Math.max(0, prev.walletBalance - amount),
+    }));
+
+    // Submit to Firestore
+    requestWithdrawalInFirestore(profile.referralId || 'SGIND0023', amount, method, destination).catch((err) => {
+      console.warn('Firestore withdrawal sync error:', err);
+    });
+  };
+
+  // Handler for package checkout select
+  const handleSelectPackageForCheckout = (pkg: PackageItem) => {
+    setSelectedCheckoutPkg(pkg);
+    handleNavigate('checkout');
+  };
+
+  // Handler for successful enrollment
+  const handleSuccessfulEnrollment = (pkg: PackageItem) => {
+    setProfile((prev) => ({
+      ...prev,
+      packageTier: pkg.name,
+    }));
+
+    const newTxn: Transaction = {
+      id: `TXN-ENR-${Math.floor(10000 + Math.random() * 90000)}`,
+      leadName: 'Self Course Enrollment',
+      packageName: pkg.name,
+      amount: pkg.price,
+      type: 'DIRECT_COMMISSION',
+      date: 'Just now',
       status: 'Completed',
     };
 
     setTransactions((prev) => [newTxn, ...prev]);
-    setEarnings((prev) => ({
-      ...prev,
-      totalWithdrawn: prev.totalWithdrawn + amount,
-    }));
   };
 
-  const handleUpdateKyc = (upiId: string, bankAccount: string, ifscCode: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      upiId,
-      bankAccount,
-      ifscCode,
-      kycStatus: 'Verified',
-    }));
+  // Admin Mutations Handlers
+  const handleAdminUpdateUser = (updatedUser: AdminUserRecord) => {
+    setAdminUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
   };
 
-  const handleResetToScreenshot = () => {
-    setProfile(initialProfile);
-    setEarnings(initialEarnings);
-    setTransactions(sampleTransactions);
+  const handleAdminAddUser = (newUser: AdminUserRecord) => {
+    setAdminUsers((prev) => [newUser, ...prev]);
   };
+
+  const handleAdminUpdateOrderStatus = (orderId: string, newStatus: AdminOrderRecord['status']) => {
+    setAdminOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+  };
+
+  const handleAdminApprovePayout = (payoutId: string, utrNumber: string) => {
+    setWithdrawals((prev) =>
+      prev.map((w) =>
+        w.id === payoutId
+          ? {
+              ...w,
+              status: 'Completed',
+              completedAt: 'Today, Just now',
+              utrNumber,
+            }
+          : w
+      )
+    );
+  };
+
+  const handleAdminRejectPayout = (payoutId: string, reason: string) => {
+    const target = withdrawals.find((w) => w.id === payoutId);
+    if (target) {
+      setEarnings((prev) => ({
+        ...prev,
+        walletBalance: prev.walletBalance + target.amount,
+      }));
+    }
+
+    setWithdrawals((prev) =>
+      prev.map((w) =>
+        w.id === payoutId
+          ? {
+              ...w,
+              status: 'Rejected',
+            }
+          : w
+      )
+    );
+  };
+
+  const handleAdminBatchApproveAllPayouts = () => {
+    const nowUtr = `IMPS${Date.now().toString().slice(-8)}`;
+    setWithdrawals((prev) =>
+      prev.map((w) =>
+        w.status === 'Pending'
+          ? {
+              ...w,
+              status: 'Completed',
+              completedAt: 'Today, Settled Batch',
+              utrNumber: nowUtr,
+            }
+          : w
+      )
+    );
+  };
+
+  const handleAdminApproveKyc = (kycId: string) => {
+    setAdminKycList((prev) =>
+      prev.map((k) => (k.id === kycId ? { ...k, status: 'Verified', rejectionReason: undefined } : k))
+    );
+  };
+
+  const handleAdminRejectKyc = (kycId: string, reason: string) => {
+    setAdminKycList((prev) =>
+      prev.map((k) => (k.id === kycId ? { ...k, status: 'Rejected', rejectionReason: reason } : k))
+    );
+  };
+
+  const handleAdminUpdatePackage = (pkg: PackageItem) => {
+    setPackages((prev) => prev.map((p) => (p.id === pkg.id ? pkg : p)));
+  };
+
+  const handleAdminAddPackage = (pkg: PackageItem) => {
+    setPackages((prev) => [...prev, pkg]);
+  };
+
+  const handleAdminSaveLinks = (links: AdminPlatformLinks) => {
+    setPlatformLinks(links);
+  };
+
+  const handleAdminUpdateBanner = (banner: AdminBanner) => {
+    setAdminBanners((prev) => prev.map((b) => (b.id === banner.id ? banner : b)));
+  };
+
+  const handleAdminAddBanner = (banner: AdminBanner) => {
+    setAdminBanners((prev) => [banner, ...prev]);
+  };
+
+  const handleAdminDeleteBanner = (bannerId: string) => {
+    setAdminBanners((prev) => prev.filter((b) => b.id !== bannerId));
+  };
+
+  const handleAdminAddAnnouncement = (ann: AdminAnnouncement) => {
+    setAdminAnnouncements((prev) => [ann, ...prev]);
+  };
+
+  const handleAdminDeleteAnnouncement = (annId: string) => {
+    setAdminAnnouncements((prev) => prev.filter((a) => a.id !== annId));
+  };
+
+  // If in dedicated admin view
+  if (activeView === 'admin') {
+    return (
+      <AdminPage
+        users={adminUsers}
+        orders={adminOrders}
+        withdrawals={withdrawals}
+        kycList={adminKycList}
+        packages={packages}
+        platformLinks={platformLinks}
+        banners={adminBanners}
+        announcements={adminAnnouncements}
+        onNavigateHome={() => handleNavigate('home')}
+        onUpdateUser={handleAdminUpdateUser}
+        onAddUser={handleAdminAddUser}
+        onUpdateOrderStatus={handleAdminUpdateOrderStatus}
+        onApprovePayout={handleAdminApprovePayout}
+        onRejectPayout={handleAdminRejectPayout}
+        onBatchApproveAllPayouts={handleAdminBatchApproveAllPayouts}
+        onApproveKyc={handleAdminApproveKyc}
+        onRejectKyc={handleAdminRejectKyc}
+        onUpdatePackage={handleAdminUpdatePackage}
+        onAddPackage={handleAdminAddPackage}
+        onSaveLinks={handleAdminSaveLinks}
+        onUpdateBanner={handleAdminUpdateBanner}
+        onAddBanner={handleAdminAddBanner}
+        onDeleteBanner={handleAdminDeleteBanner}
+        onAddAnnouncement={handleAdminAddAnnouncement}
+        onDeleteAnnouncement={handleAdminDeleteAnnouncement}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] sm:bg-[#EAEDF2] flex flex-col font-['Poppins',sans-serif] selection:bg-orange-500 selection:text-white">
@@ -240,25 +482,25 @@ export default function App() {
               : 'max-w-7xl sm:rounded-2xl sm:shadow-xl sm:border border-gray-200/80 overflow-hidden min-h-[90vh]'
           }`}
         >
-          {/* Header Component (Visible across views except standalone register/login if preferred, or shown everywhere) */}
+          {/* Header Component */}
           {activeView !== 'login' && activeView !== 'register' && (
             <Header
               avatarUrl={profile.avatarUrl}
               activeView={activeView}
               isLoggedIn={isLoggedIn}
+              userEmail={profile.email}
               onSelectView={handleNavigate}
               onOpenMenu={() => setIsSidebarOpen(true)}
-              onOpenProfile={() => {
-                handleNavigate('simulator');
-              }}
+              onOpenProfile={() => handleNavigate('profile')}
               onOpenLogin={() => {
                 setActiveView('login');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              onLogout={handleLogout}
             />
           )}
 
-          {/* 1. LOGIN VIEW (Screenshots 3) */}
+          {/* 1. LOGIN VIEW */}
           {activeView === 'login' && (
             <LoginPage
               onLoginSuccess={handleLoginSuccess}
@@ -273,7 +515,7 @@ export default function App() {
             />
           )}
 
-          {/* 2. REGISTER VIEW (Screenshots 1 & 2) */}
+          {/* 2. REGISTER VIEW */}
           {activeView === 'register' && (
             <RegisterPage
               onRegisterSuccess={handleRegisterSuccess}
@@ -285,37 +527,29 @@ export default function App() {
                 setActiveView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              initialReferralCode="SGIND0023"
+              initialReferralCode={profile.referralId || 'SGIND0023'}
             />
           )}
 
-          {/* 3. HOME VIEW (Public: Anyone can explore) */}
+          {/* 3. HOME VIEW */}
           {activeView === 'home' && (
             <HomePage
               isLoggedIn={isLoggedIn}
               onRequireLogin={handleRequireLogin}
-              onNavigateToDashboard={() => {
-                handleNavigate('dashboard');
-              }}
-              onOpenCourses={() => {
-                handleNavigate('courses');
-              }}
-              onOpenLeaderboard={() => {
-                handleNavigate('leaderboard');
-              }}
+              onNavigateToDashboard={() => handleNavigate('dashboard')}
+              onOpenCourses={() => handleNavigate('packages')}
+              onOpenLeaderboard={() => handleNavigate('leaderboard')}
             />
           )}
 
-          {/* 4. DASHBOARD VIEW (Protected) */}
+          {/* 4. DASHBOARD VIEW (Real Data from State & Firestore) */}
           {activeView === 'dashboard' && (
             <div className="p-3.5 sm:p-6 lg:p-8 pb-10 sm:pb-8 bg-[#F9FAFB] flex-1">
               <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-                {/* Top Profile Card with Verified Badge & Copy ID */}
+                {/* Top Profile Card with Verified Badge & Edit Trigger */}
                 <ProfileCard
                   profile={profile}
-                  onEditProfile={() => {
-                    handleNavigate('simulator');
-                  }}
+                  onEditProfile={() => handleNavigate('profile')}
                 />
 
                 {/* 5 Earning Metric Cards Grid */}
@@ -323,29 +557,74 @@ export default function App() {
                   earnings={earnings}
                   onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
                 />
+
+                {/* Fast Action Shortcuts Banner */}
+                <div className="bg-white p-4 sm:p-6 rounded-3xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h3 className="font-black text-slate-900 text-sm sm:text-base">
+                      Affiliate Quick Actions
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      Request payouts, view curriculum packages, or copy your sponsor link.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate('withdrawal')}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                    >
+                      Request Withdrawal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate('referral')}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                    >
+                      My Referral Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate('packages')}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    >
+                      View Packages
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* 5. COURSES VIEW (Protected) */}
-          {activeView === 'courses' && (
-            <CoursesPage
-              courses={coursesData}
+          {/* 5. PACKAGES & COURSES VIEW */}
+          {activeView === 'packages' && (
+            <PackagesPage
               profile={profile}
+              onSelectPackageForCheckout={handleSelectPackageForCheckout}
               onNavigate={handleNavigate}
             />
           )}
 
-          {/* 6. LEADERBOARD VIEW (Protected) */}
+          {/* 6. PACKAGE CHECKOUT & ENROLL VIEW */}
+          {activeView === 'checkout' && (
+            <PackageCheckoutPage
+              initialPackage={selectedCheckoutPkg}
+              profile={profile}
+              onSuccessfulEnrollment={handleSuccessfulEnrollment}
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {/* 7. LEADERBOARD VIEW (Today, Weekly, Monthly, All-Time) */}
           {activeView === 'leaderboard' && (
             <LeaderboardPage
-              users={leaderboardData}
               profile={profile}
               onNavigate={handleNavigate}
             />
           )}
 
-          {/* 7. REFERRAL VIEW (Protected) */}
+          {/* 8. REFERRAL & DOWNLINE TEAM VIEW */}
           {activeView === 'referral' && (
             <ReferralPage
               profile={profile}
@@ -353,35 +632,39 @@ export default function App() {
             />
           )}
 
-          {/* 8. PAYOUT VIEW (Protected) */}
-          {activeView === 'payout' && (
-            <PayoutPage
+          {/* 9. WITHDRAWAL REQUEST VIEW */}
+          {activeView === 'withdrawal' && (
+            <WithdrawalPage
               profile={profile}
               earnings={earnings}
-              transactions={transactions}
-              onRequestWithdrawal={handleRequestWithdrawal}
+              onSubmitWithdrawal={handleWithdrawalRequest}
               onNavigate={handleNavigate}
             />
           )}
 
-          {/* 9. KYC VIEW (Protected) */}
-          {activeView === 'kyc' && (
-            <KycPage
+          {/* 10. WITHDRAWAL HISTORY VIEW */}
+          {activeView === 'withdrawal-history' && (
+            <WithdrawalHistoryPage
+              withdrawals={withdrawals}
               profile={profile}
-              onUpdateKyc={handleUpdateKyc}
               onNavigate={handleNavigate}
             />
           )}
 
-          {/* 10. SIMULATOR / PROFILE EDIT VIEW (Protected) */}
-          {activeView === 'simulator' && (
-            <SimulatorPage
+          {/* 11. BANK DETAILS & KYC VIEW */}
+          {activeView === 'bank-kyc' && (
+            <BankKycPage
               profile={profile}
-              earnings={earnings}
-              onUpdateProfile={handleUpdateProfile}
-              onUpdateEarnings={handleUpdateEarnings}
-              onAddTransaction={handleAddTransaction}
-              onResetDefaults={handleResetToScreenshot}
+              onSaveBankKyc={handleUpdateProfile}
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {/* 12. PROFILE & AVATAR SETTINGS VIEW */}
+          {activeView === 'profile' && (
+            <ProfilePage
+              profile={profile}
+              onSaveProfile={handleUpdateProfile}
               onNavigate={handleNavigate}
             />
           )}
@@ -396,7 +679,7 @@ export default function App() {
         onClose={() => setActiveDetailsCard(null)}
         onRequestPayout={() => {
           setActiveDetailsCard(null);
-          handleNavigate('payout');
+          handleNavigate('withdrawal');
         }}
       />
 
@@ -416,7 +699,6 @@ export default function App() {
         earnings={earnings}
         isMobileFrame={isMobileFrame}
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
-        onResetDefaults={handleResetToScreenshot}
       />
 
       {/* Optional Login Modal Overlay */}
@@ -435,4 +717,3 @@ export default function App() {
     </div>
   );
 }
-

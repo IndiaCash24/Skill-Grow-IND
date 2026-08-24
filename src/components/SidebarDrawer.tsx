@@ -1,149 +1,134 @@
 import React from 'react';
 import {
   X,
-  LayoutDashboard,
   Home,
-  Link2,
-  Trophy,
+  LayoutDashboard,
   BookOpen,
+  Trophy,
+  Link2,
   CreditCard,
   History,
-  Sliders,
-  ExternalLink,
   PhoneCall,
-  LogOut,
+  ExternalLink,
   ShieldCheck,
-  RefreshCw,
-  Smartphone,
   Maximize2,
-  Package,
+  Smartphone,
+  LogOut,
+  Sparkles,
+  User,
+  ArrowDownLeft,
+  ShoppingBag,
+  Users,
+  CheckCircle2,
+  Award,
+  ShieldAlert,
 } from 'lucide-react';
-import { UserProfile, EarningStats } from '../types';
-import { SkillGrowIndLogo } from './SkillGrowIndLogo';
-
-export type AppView =
-  | 'home'
-  | 'dashboard'
-  | 'courses'
-  | 'leaderboard'
-  | 'referral'
-  | 'payout'
-  | 'kyc'
-  | 'simulator'
-  | 'login'
-  | 'register';
+import { UserProfile, EarningStats, AppView } from '../types';
 
 interface SidebarDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  activeView: AppView;
-  isLoggedIn?: boolean;
-  onSelectView: (view: AppView) => void;
-  onOpenLogin: () => void;
-  onLogout: () => void;
   profile: UserProfile;
   earnings: EarningStats;
+  activeView: AppView;
+  isLoggedIn?: boolean;
   isMobileFrame: boolean;
+  onSelectView: (view: AppView) => void;
   onToggleMobileFrame: () => void;
-  onResetDefaults: () => void;
-  onOpenReferral?: () => void;
-  onOpenLeaderboard?: () => void;
-  onOpenCourses?: () => void;
-  onOpenPayout?: () => void;
-  onOpenSimulator?: () => void;
-  onOpenKyc?: () => void;
+  onOpenLogin: () => void;
+  onLogout: () => void;
 }
 
 export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   isOpen,
   onClose,
-  activeView,
-  isLoggedIn = false,
-  onSelectView,
-  onOpenLogin,
-  onLogout,
   profile,
   earnings,
+  activeView,
+  isLoggedIn = true,
   isMobileFrame,
+  onSelectView,
   onToggleMobileFrame,
-  onResetDefaults,
+  onOpenLogin,
+  onLogout,
 }) => {
   if (!isOpen) return null;
 
+  const isAdmin = profile?.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+
   const navigateTo = (view: AppView) => {
-    if (view !== 'home' && !isLoggedIn) {
-      onClose();
-      onOpenLogin();
-      return;
-    }
     onSelectView(view);
     onClose();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden font-['Poppins',sans-serif]">
       {/* Backdrop */}
       <div
-        id="sidebar-backdrop"
-        onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in"
+        onClick={onClose}
       />
 
-      {/* Drawer Panel */}
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div
-          id="sidebar-drawer-panel"
-          className="w-screen max-w-xs sm:max-w-sm bg-white shadow-2xl flex flex-col justify-between animate-slide-left overflow-y-auto"
-        >
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-slate-50/70">
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-1">
-                <span className="font-['Poppins'] font-black text-lg text-orange-500">Skill</span>
-                <span className="font-['Poppins'] font-black text-lg text-slate-900">Grow</span>
-                <span className="text-[10px] font-bold bg-slate-900 text-white px-1.5 py-0.2 rounded">IND</span>
+      {/* Right-Side Sliding Drawer Panel */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10 z-10 pointer-events-auto">
+        <div className="w-80 sm:w-88 bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto transform transition-all duration-300 ease-in-out border-l border-gray-100 animate-slide-in-right">
+          
+          {/* Header Brand */}
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-900 text-white">
+            <div className="flex items-center space-x-2">
+              <div className="font-['Poppins'] font-black text-lg sm:text-xl tracking-tight leading-none">
+                <span className="text-orange-500">Skill</span>
+                <span className="text-white ml-1">Grow</span>
               </div>
-              <span className="text-[8px] text-gray-500 italic font-serif">Earn knowledge ! Earn money</span>
+              <span className="text-[10px] font-extrabold bg-orange-500 text-white px-1.5 py-0.5 rounded shadow-xs">
+                IND
+              </span>
             </div>
 
             <button
-              id="close-sidebar-btn"
               onClick={onClose}
-              type="button"
-              aria-label="Close sidebar"
-              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200/60 transition-colors"
+              className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+              title="Close Menu"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* User mini summary */}
+          {/* User Profile Mini Card in Drawer */}
           {isLoggedIn ? (
-            <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white">
-              <div className="flex items-center space-x-3.5">
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.name}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-orange-400 shadow-md"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="overflow-hidden">
-                  <h4 className="font-bold text-sm text-white truncate tracking-wide">
-                    {profile.name}
-                  </h4>
-                  <p className="text-[11px] text-orange-200">ID: {profile.referralId}</p>
-                  <div className="inline-flex items-center space-x-1 mt-1 bg-orange-500/30 text-orange-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-orange-400/30">
-                    <ShieldCheck className="w-2.5 h-2.5" />
-                    <span>{profile.packageTier}</span>
+            <div className="p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white">
+              <div className="flex items-center space-x-3">
+                <div
+                  onClick={() => navigateTo('profile')}
+                  className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-pink-500 to-indigo-500 cursor-pointer shrink-0"
+                  title="Click to edit profile"
+                >
+                  <img
+                    src={profile.avatarUrl}
+                    alt={profile.name}
+                    className="w-full h-full rounded-full object-cover border-2 border-white"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+                    }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center space-x-1.5">
+                    <h4 className="font-bold text-sm text-white truncate">{profile.name}</h4>
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   </div>
+                  <p className="text-[11px] text-gray-400 truncate">ID: {profile.referralId}</p>
+                  <span className="inline-block mt-0.5 text-[9px] font-extrabold bg-purple-500/30 text-purple-300 border border-purple-400/30 px-2 py-0.2 rounded-full">
+                    {profile.packageTier}
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-xs">
-                <span className="text-gray-300">Total Earned:</span>
+              <div className="mt-3 pt-2.5 border-t border-white/10 flex justify-between items-center text-xs">
+                <span className="text-gray-300">Withdrawable Balance:</span>
                 <span className="font-bold text-emerald-400 text-sm">
-                  ₹ {earnings.allTime.toLocaleString('en-IN')}
+                  ₹ {earnings.walletBalance > 0 ? earnings.walletBalance.toLocaleString('en-IN') : (earnings.today + earnings.passiveIncome).toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
@@ -151,7 +136,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             <div className="p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-400/40 flex items-center justify-center text-orange-400 font-bold text-sm">
-                  GK
+                  SG
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-white">Guest Visitor</h4>
@@ -171,31 +156,31 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
             </div>
           )}
 
-          {/* Menu Items */}
+          {/* Clean Navigation Menu Items */}
           <div className="p-4 space-y-1.5 flex-1">
             <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-              Navigation
+              Main Dashboard
             </p>
 
-            {/* 1. Home Page Link */}
+            {/* 1. Home Link */}
             <button
               id="menu-home-link"
               onClick={() => navigateTo('home')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-left ${
                 activeView === 'home'
                   ? 'bg-orange-50 text-orange-600 border border-orange-200'
                   : 'text-gray-700 hover:bg-gray-100 font-medium'
               }`}
             >
               <Home className={`w-4 h-4 ${activeView === 'home' ? 'text-orange-600' : 'text-slate-600'}`} />
-              <span>Home Page (Courses & Summit)</span>
+              <span>Home Page</span>
             </button>
 
             {/* 2. Earning Dashboard Link */}
             <button
               id="menu-dashboard-link"
               onClick={() => navigateTo('dashboard')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors text-left ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-colors text-left ${
                 activeView === 'dashboard'
                   ? 'bg-pink-50 text-pink-600 border border-pink-200 shadow-xs'
                   : 'text-gray-800 hover:bg-pink-50/70 hover:text-pink-600 font-bold bg-pink-50/40'
@@ -210,25 +195,57 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               </div>
             </button>
 
+            <p className="px-3 pt-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Courses & Affiliates
+            </p>
+
             {/* 3. Packages & Courses */}
             <button
-              id="menu-courses-link"
-              onClick={() => navigateTo('courses')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
-                activeView === 'courses'
+              id="menu-packages-link"
+              onClick={() => navigateTo('packages')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'packages'
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
               <BookOpen className="w-4 h-4 text-emerald-600" />
-              <span>Packages & Training</span>
+              <span>All Packages & Details</span>
             </button>
 
-            {/* 4. Leaderboard */}
+            {/* 4. Checkout & Enroll */}
+            <button
+              id="menu-checkout-link"
+              onClick={() => navigateTo('checkout')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'checkout'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 text-purple-600" />
+              <span>Enroll / Checkout</span>
+            </button>
+
+            {/* 5. Referrals & Team */}
+            <button
+              id="menu-referral-link"
+              onClick={() => navigateTo('referral')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'referral'
+                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Link2 className="w-4 h-4 text-indigo-600" />
+              <span>Referral Link & My Team</span>
+            </button>
+
+            {/* 6. Leaderboard */}
             <button
               id="menu-leaderboard-link"
               onClick={() => navigateTo('leaderboard')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
                 activeView === 'leaderboard'
                   ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -238,44 +255,44 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <span>All India Leaderboard</span>
             </button>
 
-            {/* 5. Affiliate Links & Banners */}
-            <button
-              id="menu-referral-link"
-              onClick={() => navigateTo('referral')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
-                activeView === 'referral'
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Link2 className="w-4 h-4 text-indigo-600" />
-              <span>Affiliate Links & Banners</span>
-            </button>
-
             <p className="px-3 pt-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
               Finance & Profile
             </p>
 
-            {/* Payouts */}
+            {/* 7. Request Withdrawal */}
             <button
-              id="menu-payout-link"
-              onClick={() => navigateTo('payout')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
-                activeView === 'payout'
+              id="menu-withdrawal-link"
+              onClick={() => navigateTo('withdrawal')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'withdrawal'
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <History className="w-4 h-4 text-purple-600" />
-              <span>Payouts & Withdrawals</span>
+              <ArrowDownLeft className="w-4 h-4 text-emerald-600" />
+              <span>Request Withdrawal</span>
             </button>
 
-            {/* KYC */}
+            {/* 8. Withdrawal History */}
             <button
-              id="menu-kyc-link"
-              onClick={() => navigateTo('kyc')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors text-left ${
-                activeView === 'kyc'
+              id="menu-withdrawal-history-link"
+              onClick={() => navigateTo('withdrawal-history')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'withdrawal-history'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <History className="w-4 h-4 text-purple-600" />
+              <span>Withdrawal History</span>
+            </button>
+
+            {/* 9. Bank & KYC */}
+            <button
+              id="menu-bank-kyc-link"
+              onClick={() => navigateTo('bank-kyc')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'bank-kyc'
                   ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
@@ -289,62 +306,64 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               </div>
             </button>
 
-            <p className="px-3 pt-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-              Dashboard Customizer
-            </p>
-
-            {/* Customize Stats Button in Sidebar */}
+            {/* 10. Profile Settings */}
             <button
-              id="menu-simulator-link"
-              onClick={() => navigateTo('simulator')}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-xs hover:opacity-95 transition-all text-left ${
-                activeView === 'simulator'
-                  ? 'bg-gradient-to-r from-purple-700 to-pink-700 ring-2 ring-purple-300'
-                  : 'bg-gradient-to-r from-pink-500 to-purple-600'
+              id="menu-profile-link"
+              onClick={() => navigateTo('profile')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'profile'
+                  ? 'bg-orange-50 text-orange-700 border border-orange-200 font-bold'
+                  : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <Sliders className="w-4 h-4 text-white" />
-              <div className="flex-1 flex items-center justify-between">
-                <span>Customize Stats / Profile</span>
-                <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold">Edit</span>
-              </div>
+              <User className="w-4 h-4 text-orange-600" />
+              <span>My Profile & Picture</span>
             </button>
 
-            {/* Reset Stats to Default in Sidebar */}
-            <button
-              id="menu-reset-link"
-              onClick={() => {
-                onResetDefaults();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-700 font-medium text-xs transition-colors text-left border border-gray-200"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
-              <span>Reset to Screenshot Default (₹0)</span>
-            </button>
+            {/* 11. Admin Panel Control - Strictly for surendrabusiness02@gmail.com */}
+            {isAdmin && (
+              <button
+                id="menu-admin-link"
+                onClick={() => navigateTo('admin')}
+                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors text-left cursor-pointer ${
+                  activeView === 'admin'
+                    ? 'bg-slate-900 text-white shadow-md'
+                    : 'text-slate-900 bg-slate-100 hover:bg-slate-200'
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-orange-500" />
+                <div className="flex-1 flex items-center justify-between">
+                  <span>Admin Control Suite</span>
+                  <span className="text-[9px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-black uppercase">
+                    Admin
+                  </span>
+                </div>
+              </button>
+            )}
 
-            {/* Toggle Fullscreen / Mobile Mode */}
-            <button
-              id="menu-toggle-frame-link"
-              onClick={() => {
-                onToggleMobileFrame();
-              }}
-              className="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-gray-600 hover:bg-slate-100 font-medium text-xs transition-colors text-left border border-gray-200"
-            >
-              {isMobileFrame ? (
-                <>
-                  <Maximize2 className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Switch to Fullscreen Layout</span>
-                </>
-              ) : (
-                <>
-                  <Smartphone className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Switch to Mobile Frame Layout</span>
-                </>
-              )}
-            </button>
+            {/* Switch Layout */}
+            <div className="pt-2">
+              <button
+                id="menu-toggle-frame-link"
+                onClick={onToggleMobileFrame}
+                className="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-gray-600 hover:bg-slate-100 font-medium text-xs transition-colors text-left border border-gray-200"
+              >
+                {isMobileFrame ? (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Switch to Fullscreen Layout</span>
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Switch to Mobile Frame Layout</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Footer with community & logout */}
+          {/* Footer */}
           <div className="p-4 border-t border-gray-100 bg-gray-50/80 space-y-2">
             <a
               href="https://whatsapp.com"

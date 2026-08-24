@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, EarningStats, Transaction } from '../types';
 import confetti from 'canvas-confetti';
+import { createPayoutRequestInFirestore } from '../lib/firestoreService';
 
 interface PayoutPageProps {
   profile: UserProfile;
@@ -55,7 +56,22 @@ export const PayoutPage: React.FC<PayoutPageProps> = ({
     }
 
     setError('');
-    onRequestWithdrawal(withdrawAmount, method === 'upi' ? profile.upiId : profile.bankAccount);
+    const targetDest = method === 'upi' ? (profile.upiId || 'affiliate@upi') : (profile.bankAccount || 'Bank A/C');
+    
+    onRequestWithdrawal(withdrawAmount, targetDest);
+
+    // Sync payout request to Cloud Firestore
+    createPayoutRequestInFirestore({
+      userId: profile.referralId || 'user',
+      userName: profile.name,
+      userCode: profile.referralId || 'SGIND0023',
+      amount: withdrawAmount,
+      payoutMethod: method === 'upi' ? 'UPI' : 'IMPS_BANK',
+      destination: targetDest,
+    }).catch((err) => {
+      console.warn('Firestore payout request error:', err);
+    });
+
     setSubmitted(true);
 
     try {

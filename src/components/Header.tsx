@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-  ShoppingCart,
   LayoutDashboard,
   Home,
   LogIn,
-  GraduationCap,
+  BookOpen,
   Trophy,
   Share2,
   Wallet,
@@ -12,13 +11,20 @@ import {
   UserPlus,
   LogOut,
   Sparkles,
+  ShoppingBag,
+  History,
+  CreditCard,
+  User,
+  ArrowDownLeft,
+  ShieldAlert,
 } from 'lucide-react';
-import { AppView } from './SidebarDrawer';
+import { AppView } from '../types';
 
 interface HeaderProps {
   avatarUrl: string;
   activeView: AppView;
   isLoggedIn?: boolean;
+  userEmail?: string;
   cartCount?: number;
   onSelectView: (view: AppView) => void;
   onOpenMenu: () => void;
@@ -31,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   avatarUrl,
   activeView,
   isLoggedIn = false,
+  userEmail,
   cartCount = 0,
   onSelectView,
   onOpenMenu,
@@ -38,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLogin,
   onLogout,
 }) => {
+  const isAdmin = userEmail?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
   const handleDashboardClick = () => {
     if (!isLoggedIn) {
       onOpenLogin();
@@ -51,21 +59,13 @@ export const Header: React.FC<HeaderProps> = ({
       onOpenLogin();
       return;
     }
-    onOpenProfile();
-  };
-
-  const handleCartClick = () => {
-    if (!isLoggedIn) {
-      onOpenLogin();
-      return;
-    }
-    onSelectView('home');
+    onSelectView('profile');
   };
 
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shadow-[0_2px_12px_-3px_rgba(0,0,0,0.06)]"
+      className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shadow-[0_2px_12px_-3px_rgba(0,0,0,0.06)] font-['Poppins',sans-serif]"
     >
       {/* Left: Brand Logo & Tagline */}
       <div
@@ -105,15 +105,28 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          onClick={() => onSelectView('courses')}
+          onClick={() => onSelectView('packages')}
           className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
-            activeView === 'courses'
-              ? 'bg-orange-50 text-orange-600 font-extrabold'
+            activeView === 'packages'
+              ? 'bg-emerald-50 text-emerald-700 font-extrabold'
               : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
           }`}
         >
-          <GraduationCap className="w-4 h-4 text-emerald-500" />
-          <span>Courses & Packages</span>
+          <BookOpen className="w-4 h-4 text-emerald-500" />
+          <span>Packages</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectView('checkout')}
+          className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
+            activeView === 'checkout'
+              ? 'bg-purple-50 text-purple-700 font-extrabold'
+              : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4 text-purple-600" />
+          <span>Enroll</span>
         </button>
 
         <button
@@ -121,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => onSelectView('leaderboard')}
           className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
             activeView === 'leaderboard'
-              ? 'bg-orange-50 text-orange-600 font-extrabold'
+              ? 'bg-amber-50 text-amber-700 font-extrabold'
               : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
           }`}
         >
@@ -136,11 +149,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={handleDashboardClick}
               className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
                 activeView === 'dashboard'
-                  ? 'bg-purple-50 text-purple-700 font-extrabold'
+                  ? 'bg-pink-50 text-pink-700 font-extrabold'
                   : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4 text-purple-600" />
+              <LayoutDashboard className="w-4 h-4 text-pink-600" />
               <span>Affiliate Dashboard</span>
             </button>
 
@@ -149,157 +162,102 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onSelectView('referral')}
               className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
                 activeView === 'referral'
-                  ? 'bg-blue-50 text-blue-600 font-extrabold'
+                  ? 'bg-indigo-50 text-indigo-700 font-extrabold'
                   : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Share2 className="w-4 h-4 text-blue-500" />
-              <span>Referral Tool</span>
+              <Share2 className="w-4 h-4 text-indigo-600" />
+              <span>My Team</span>
             </button>
 
             <button
               type="button"
-              onClick={() => onSelectView('payout')}
+              onClick={() => onSelectView('withdrawal')}
               className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
-                activeView === 'payout'
-                  ? 'bg-amber-50 text-amber-700 font-extrabold'
-                  : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Wallet className="w-4 h-4 text-amber-600" />
-              <span>Payouts</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onSelectView('kyc')}
-              className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
-                activeView === 'kyc'
+                activeView === 'withdrawal'
                   ? 'bg-emerald-50 text-emerald-700 font-extrabold'
                   : 'hover:bg-gray-100 text-slate-600 hover:text-slate-900'
               }`}
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>KYC</span>
+              <ArrowDownLeft className="w-4 h-4 text-emerald-600" />
+              <span>Withdrawal</span>
             </button>
+
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onSelectView('admin')}
+                className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
+                  activeView === 'admin'
+                    ? 'bg-slate-900 text-white font-extrabold shadow-sm'
+                    : 'hover:bg-slate-100 text-slate-900 font-extrabold border border-slate-200/80 bg-slate-50'
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-orange-500" />
+                <span>Admin Panel</span>
+              </button>
+            )}
           </>
         )}
       </nav>
 
-      {/* Right Controls: Quick View Switch + Cart (0) + Avatar + Menu */}
+      {/* Right: Actions, Profile Avatar & Mobile Hamburger */}
       <div className="flex items-center space-x-2 sm:space-x-3">
-        
-        {/* Quick View Switch / Login / Register Buttons */}
-        {!isLoggedIn ? (
-          <div className="flex items-center space-x-2">
+        {isLoggedIn ? (
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Quick Go to Dashboard Button on Desktop */}
             <button
-              id="nav-to-login-btn"
-              onClick={onOpenLogin}
               type="button"
-              className="inline-flex items-center space-x-1.5 bg-gray-100 hover:bg-gray-200 text-slate-800 text-xs sm:text-sm font-bold px-3.5 sm:px-4 py-2 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
+              onClick={handleDashboardClick}
+              className="hidden sm:inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition-all"
             >
-              <LogIn className="w-3.5 h-3.5 text-orange-600" />
-              <span>Login</span>
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Affiliate Dashboard</span>
             </button>
 
-            <button
-              id="nav-to-register-btn"
-              onClick={() => onSelectView('register')}
-              type="button"
-              className="hidden sm:inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-md active:scale-95 transition-all cursor-pointer"
+            {/* Profile Avatar Button */}
+            <div
+              id="header-profile-avatar-btn"
+              onClick={handleProfileClick}
+              className="relative cursor-pointer group flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              title="My Profile & Settings"
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Register Free</span>
-            </button>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 shadow-sm">
+                <img
+                  src={avatarUrl}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover border border-white"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+                  }}
+                />
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="flex items-center space-x-2">
-            {activeView !== 'dashboard' ? (
-              <button
-                id="nav-to-dashboard-btn"
-                onClick={handleDashboardClick}
-                type="button"
-                className="hidden sm:inline-flex items-center space-x-1.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
-              </button>
-            ) : (
-              <button
-                id="nav-to-home-btn"
-                onClick={() => onSelectView('home')}
-                type="button"
-                className="hidden sm:inline-flex items-center space-x-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 text-xs sm:text-sm font-bold px-4 py-2 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Home Page</span>
-              </button>
-            )}
-
-            {onLogout && (
-              <button
-                id="header-logout-btn"
-                onClick={onLogout}
-                type="button"
-                title="Sign Out"
-                className="hidden md:inline-flex items-center space-x-1 p-2 rounded-xl text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={onOpenLogin}
+            className="flex items-center space-x-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Login / Register</span>
+          </button>
         )}
 
-        {/* Circular Emblem / Avatar */}
+        {/* Mobile Hamburger Menu Toggle Button */}
         <button
-          id="header-profile-btn"
-          onClick={handleProfileClick}
+          id="menu-toggle-btn"
           type="button"
-          aria-label="View Profile"
-          className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-orange-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-orange-400 active:scale-95 transition-transform bg-orange-50 flex items-center justify-center cursor-pointer"
-        >
-          {isLoggedIn ? (
-            <img
-              src={avatarUrl}
-              alt="Profile Avatar"
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80';
-              }}
-            />
-          ) : (
-            <span className="font-extrabold text-xs text-orange-600">GK</span>
-          )}
-        </button>
-
-        {/* Cart Icon with badge "0" */}
-        <button
-          id="header-cart-btn"
-          onClick={handleCartClick}
-          type="button"
-          aria-label="Shopping Cart"
-          className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center shadow-xs active:scale-95 transition-transform cursor-pointer"
-        >
-          <ShoppingCart className="w-4 h-4 text-white" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">
-            {cartCount}
-          </span>
-        </button>
-
-        {/* Hamburger Menu Button */}
-        <button
-          id="header-hamburger-btn"
           onClick={onOpenMenu}
-          type="button"
           aria-label="Open Navigation Menu"
-          className="p-2 rounded-xl text-gray-800 hover:bg-gray-100 active:bg-gray-200 transition-colors focus:outline-none cursor-pointer"
+          className="p-2 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center justify-center border border-gray-200 shadow-2xs"
         >
-          <div className="w-6 h-5 flex flex-col justify-between items-center py-0.5">
-            <span className="w-full h-[2.5px] bg-slate-800 rounded-full"></span>
-            <span className="w-full h-[2.5px] bg-slate-800 rounded-full"></span>
-            <span className="w-full h-[2.5px] bg-slate-800 rounded-full"></span>
+          <div className="w-5 h-4 flex flex-col justify-between">
+            <span className="w-full h-0.5 bg-slate-800 rounded-full"></span>
+            <span className="w-full h-0.5 bg-slate-800 rounded-full"></span>
+            <span className="w-full h-0.5 bg-slate-800 rounded-full"></span>
           </div>
         </button>
       </div>

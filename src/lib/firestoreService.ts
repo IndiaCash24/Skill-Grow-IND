@@ -19,6 +19,7 @@ import {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { UserProfile, EarningStats } from '../types';
 
 // -------------------------------------------------------------
 // 1. DATA MODELS & TYPES
@@ -121,7 +122,7 @@ export async function getShardedCounterCount(counterName: string): Promise<numbe
 }
 
 // -------------------------------------------------------------
-// 3. REAL-TIME USER WALLET & PROFILE LISTENER (Lightweight)
+// 3. REAL-TIME USER WALLET & PROFILE LISTENER
 // -------------------------------------------------------------
 export function subscribeToUserProfile(
   userId: string,
@@ -145,8 +146,52 @@ export function subscribeToUserProfile(
   );
 }
 
+export function subscribeToUserData(
+  userCode: string,
+  onProfileUpdate: (profile: Partial<UserProfile>) => void,
+  onEarningsUpdate: (earnings: Partial<EarningStats>) => void
+): () => void {
+  try {
+    const userRef = doc(db, 'users', userCode);
+    const unsubscribe = onSnapshot(
+      userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data() as FirestoreUser;
+          if (data) {
+            onProfileUpdate({
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              avatarUrl: data.avatarUrl,
+              packageTier: data.activePackage,
+              kycStatus: data.kyc?.status === 'verified' ? 'Verified' : 'Pending',
+            });
+            if (data.wallet) {
+              onEarningsUpdate({
+                today: data.wallet.todayEarnings || 0,
+                sevenDays: data.wallet.last7Days || 0,
+                thirtyDays: data.wallet.last30Days || 0,
+                allTime: data.wallet.allTimeEarnings || 0,
+                walletBalance: data.wallet.availableForPayout || 0,
+                totalWithdrawn: data.wallet.paidOutTotal || 0,
+              });
+            }
+          }
+        }
+      },
+      (err) => {
+        console.warn('Firestore subscription notice (using local sync):', err);
+      }
+    );
+    return unsubscribe;
+  } catch {
+    return () => {};
+  }
+}
+
 // -------------------------------------------------------------
-// 4. PAGINATED READS (limit + startAfter) FOR SCALE
+// 4. PAGINATED READS FOR LARGE SCALE
 // -------------------------------------------------------------
 export async function fetchPaginatedTransactions(
   userId: string,
@@ -175,35 +220,8 @@ export async function fetchPaginatedTransactions(
   }
 }
 
-export async function fetchPaginatedReferrals(
-  userId: string,
-  pageSize: number = 10,
-  lastVisibleDoc?: QueryDocumentSnapshot | null
-): Promise<{ referrals: ReferralRecord[]; lastDoc: QueryDocumentSnapshot | null }> {
-  try {
-    const refsCol = collection(db, 'users', userId, 'referrals');
-    let q = query(refsCol, orderBy('timestamp', 'desc'), limit(pageSize));
-
-    if (lastVisibleDoc) {
-      q = query(refsCol, orderBy('timestamp', 'desc'), startAfter(lastVisibleDoc), limit(pageSize));
-    }
-
-    const snapshot = await getDocs(q);
-    const referrals: ReferralRecord[] = [];
-    snapshot.forEach((docSnap) => {
-      referrals.push({ id: docSnap.id, ...(docSnap.data() as any) });
-    });
-
-    const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
-    return { referrals, lastDoc: newLastDoc };
-  } catch (error) {
-    console.warn('[Firestore] Paginated referrals error:', error);
-    return { referrals: [], lastDoc: null };
-  }
-}
-
 // -------------------------------------------------------------
-// 5. ATOMIC COMMISSION & TRANSACTION ENGINE (Server-grade ACID)
+// 5. ATOMIC COMMISSION & TRANSACTION ENGINE
 // -------------------------------------------------------------
 export async function recordPackagePurchaseAtomic(params: {
   buyerUid: string;
@@ -215,13 +233,11 @@ export async function recordPackagePurchaseAtomic(params: {
 }): Promise<{ success: boolean; directCommission: number; passiveCommission: number }> {
   const { buyerUid, buyerName, buyerEmail, packageId, packagePrice, sponsorCode } = params;
 
-  // Direct commission ~70%, 2nd-tier passive ~15%
   const directComm = Math.round(packagePrice * 0.70);
   const passiveComm = Math.round(packagePrice * 0.15);
 
   try {
     await runTransaction(db, async (transaction) => {
-      // 1. Find Direct Sponsor
       const usersCol = collection(db, 'users');
       const sponsorQuery = query(usersCol, where('userCode', '==', sponsorCode), limit(1));
       const sponsorSnap = await getDocs(sponsorQuery);
@@ -231,7 +247,6 @@ export async function recordPackagePurchaseAtomic(params: {
         const sponsorRef = sponsorDoc.ref;
         const sponsorData = sponsorDoc.data() as FirestoreUser;
 
-        // Credit Direct Sponsor
         transaction.update(sponsorRef, {
           'wallet.allTimeEarnings': increment(directComm),
           'wallet.todayEarnings': increment(directComm),
@@ -241,7 +256,6 @@ export async function recordPackagePurchaseAtomic(params: {
           updatedAt: serverTimestamp(),
         });
 
-        // Add Direct Referral subcollection record
         const directRefCol = doc(collection(db, 'users', sponsorDoc.id, 'referrals'));
         transaction.set(directRefCol, {
           referredUserId: buyerUid,
@@ -253,7 +267,6 @@ export async function recordPackagePurchaseAtomic(params: {
           timestamp: serverTimestamp(),
         });
 
-        // Add Transaction record
         const directTxCol = doc(collection(db, 'users', sponsorDoc.id, 'transactions'));
         transaction.set(directTxCol, {
           type: 'commission_direct',
@@ -264,7 +277,6 @@ export async function recordPackagePurchaseAtomic(params: {
           timestamp: serverTimestamp(),
         });
 
-        // 2. Find Tier-2 Passive Sponsor
         if (sponsorData.sponsorId) {
           const tier2Ref = doc(db, 'users', sponsorData.sponsorId);
           const tier2Snap = await transaction.get(tier2Ref);
@@ -290,7 +302,6 @@ export async function recordPackagePurchaseAtomic(params: {
       }
     });
 
-    // Increment global counters asynchronously
     incrementShardedCounter('global_course_sales', 1);
     incrementShardedCounter(`sales_${packageId}`, 1);
 
@@ -300,3 +311,209 @@ export async function recordPackagePurchaseAtomic(params: {
     return { success: false, directCommission: 0, passiveCommission: 0 };
   }
 }
+
+// -------------------------------------------------------------
+// 6. REAL AUTHENTICATION & USER LIFECYCLE
+// -------------------------------------------------------------
+export async function registerUserInFirestore(params: {
+  uid: string;
+  name: string;
+  email: string;
+  phone: string;
+  userCode: string;
+  sponsorCode: string;
+  state: string;
+  packageTier?: string;
+}): Promise<FirestoreUser> {
+  const { uid, name, email, phone, userCode, sponsorCode, packageTier = 'SILVER PACKAGE' } = params;
+
+  const newUserDoc: FirestoreUser = {
+    uid,
+    userCode,
+    name,
+    email: email.toLowerCase(),
+    phone,
+    role: 'affiliate',
+    sponsorId: sponsorCode,
+    sponsorCode,
+    activePackage: packageTier,
+    avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
+    wallet: {
+      allTimeEarnings: 0,
+      todayEarnings: 0,
+      last7Days: 0,
+      last30Days: 0,
+      availableForPayout: 0,
+      paidOutTotal: 0,
+    },
+    kyc: {
+      status: 'pending',
+    },
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    const userRef = doc(db, 'users', uid);
+    await setDoc(userRef, newUserDoc, { merge: true });
+    incrementShardedCounter('global_registered_affiliates', 1);
+  } catch (error) {
+    console.warn('[Firestore] Register user error (persisting locally):', error);
+  }
+
+  return newUserDoc;
+}
+
+export async function fetchUserByCredential(identifier: string): Promise<FirestoreUser | null> {
+  const clean = identifier.trim();
+  try {
+    const usersRef = collection(db, 'users');
+
+    if (clean.includes('@')) {
+      const qEmail = query(usersRef, where('email', '==', clean.toLowerCase()), limit(1));
+      const snap = await getDocs(qEmail);
+      if (!snap.empty) {
+        return snap.docs[0].data() as FirestoreUser;
+      }
+    }
+
+    const qCode = query(usersRef, where('userCode', '==', clean.toUpperCase()), limit(1));
+    const snapCode = await getDocs(qCode);
+    if (!snapCode.empty) {
+      return snapCode.docs[0].data() as FirestoreUser;
+    }
+
+    const qPhone = query(usersRef, where('phone', '==', clean), limit(1));
+    const snapPhone = await getDocs(qPhone);
+    if (!snapPhone.empty) {
+      return snapPhone.docs[0].data() as FirestoreUser;
+    }
+
+    const directDoc = await getDoc(doc(db, 'users', clean));
+    if (directDoc.exists()) {
+      return directDoc.data() as FirestoreUser;
+    }
+
+    return null;
+  } catch (error) {
+    console.warn('[Firestore] fetchUserByCredential error:', error);
+    return null;
+  }
+}
+
+export async function submitKycToFirestore(
+  userIdOrData:
+    | string
+    | {
+        userId: string;
+        userName?: string;
+        panNumber?: string;
+        aadhaarNumber?: string;
+        bankAccount?: string;
+        ifscCode?: string;
+        bankName?: string;
+        upiId?: string;
+      },
+  kycDataArg?: {
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    upiId?: string;
+    panNumber?: string;
+    aadhaarNumber?: string;
+  }
+): Promise<boolean> {
+  try {
+    let targetUserId = '';
+    let bankName = '';
+    let accountNumber = '';
+    let ifscCode = '';
+    let upiId = '';
+    let panNumber = '';
+    let aadhaarNumber = '';
+
+    if (typeof userIdOrData === 'string') {
+      targetUserId = userIdOrData;
+      bankName = kycDataArg?.bankName || '';
+      accountNumber = kycDataArg?.accountNumber || '';
+      ifscCode = kycDataArg?.ifscCode || '';
+      upiId = kycDataArg?.upiId || '';
+      panNumber = kycDataArg?.panNumber || '';
+      aadhaarNumber = kycDataArg?.aadhaarNumber || '';
+    } else {
+      targetUserId = userIdOrData.userId;
+      bankName = userIdOrData.bankName || '';
+      accountNumber = userIdOrData.bankAccount || '';
+      ifscCode = userIdOrData.ifscCode || '';
+      upiId = userIdOrData.upiId || '';
+      panNumber = userIdOrData.panNumber || '';
+      aadhaarNumber = userIdOrData.aadhaarNumber || '';
+    }
+
+    const userRef = doc(db, 'users', targetUserId);
+    await updateDoc(userRef, {
+      'kyc.bankName': bankName,
+      'kyc.accountNumber': accountNumber,
+      'kyc.ifscCode': ifscCode,
+      'kyc.upiId': upiId,
+      'kyc.panNumber': panNumber,
+      'kyc.aadhaarNumber': aadhaarNumber,
+      'kyc.status': 'verified',
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.warn('[Firestore] submitKyc error:', error);
+    return false;
+  }
+}
+
+export async function requestWithdrawalInFirestore(
+  userId: string,
+  amount: number,
+  method: 'UPI' | 'Bank Transfer' | 'IMPS_BANK',
+  destination: string
+): Promise<boolean> {
+  try {
+    const payoutRef = doc(collection(db, 'payoutRequests'));
+    await setDoc(payoutRef, {
+      payoutId: payoutRef.id,
+      userId,
+      amount,
+      payoutMethod: method,
+      destination,
+      status: 'completed',
+      requestedAt: serverTimestamp(),
+      completedAt: serverTimestamp(),
+    });
+
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      'wallet.availableForPayout': increment(-amount),
+      'wallet.paidOutTotal': increment(amount),
+      updatedAt: serverTimestamp(),
+    });
+
+    return true;
+  } catch (error) {
+    console.warn('[Firestore] requestWithdrawal error:', error);
+    return false;
+  }
+}
+
+export async function createPayoutRequestInFirestore(params: {
+  userId: string;
+  userName: string;
+  userCode: string;
+  amount: number;
+  payoutMethod: string;
+  destination: string;
+}): Promise<boolean> {
+  return requestWithdrawalInFirestore(
+    params.userId || params.userCode,
+    params.amount,
+    params.payoutMethod as any,
+    params.destination
+  );
+}
+

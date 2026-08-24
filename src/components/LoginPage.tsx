@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, X, AlertCircle, CheckCircle2, ArrowLeft, Headphones } from 'lucide-react';
 import { UserProfile } from '../types';
+import { fetchUserByCredential } from '../lib/firestoreService';
 
 interface LoginPageProps {
   onLoginSuccess: (userProfile?: UserProfile) => void;
@@ -15,7 +16,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onCloseOrHome,
   isModal = false,
 }) => {
-  const [gkIdOrEmail, setGkIdOrEmail] = useState('');
+  const [sgIdOrEmail, setSgIdOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -24,15 +25,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotNotice, setForgotNotice] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
 
-    const trimmedInput = gkIdOrEmail.trim();
+    const trimmedInput = sgIdOrEmail.trim();
 
     if (!trimmedInput) {
-      setErrorMessage('Please enter your GK ID or Email Address.');
+      setErrorMessage('Please enter your SG ID or Email Address.');
       return;
     }
 
@@ -41,12 +42,41 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       return;
     }
 
-    // Check localStorage registered users or master user
+    // 1. Check Cloud Firestore Database
+    try {
+      const fsUser = await fetchUserByCredential(trimmedInput);
+      if (fsUser) {
+        const userProfile: UserProfile = {
+          name: fsUser.name || 'Skill Grow Affiliate',
+          referralId: fsUser.userCode || 'SGIND0023',
+          packageTier: fsUser.activePackage || 'SILVER PACKAGE',
+          avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name)}`,
+          email: fsUser.email || 'affiliate@gmail.com',
+          phone: fsUser.phone || '+91 98765 43210',
+          joinDate: 'Active Member',
+          sponsorName: 'Skill Grow Team',
+          sponsorId: fsUser.sponsorCode || 'SGIND0023',
+          kycStatus: fsUser.kyc?.status === 'verified' ? 'Verified' : 'Pending',
+          upiId: fsUser.kyc?.upiId || '',
+          bankAccount: fsUser.kyc?.accountNumber ? `•••• ${fsUser.kyc.accountNumber.slice(-4)}` : '',
+          ifscCode: fsUser.kyc?.ifscCode || '',
+        };
+
+        setSuccessMessage(`Login Successful! Welcome back, ${userProfile.name}!`);
+        setTimeout(() => {
+          onLoginSuccess(userProfile);
+        }, 600);
+        return;
+      }
+    } catch (fsErr) {
+      console.warn('Firestore user fetch:', fsErr);
+    }
+
+    // 2. Check local persistence
     try {
       const storedUsersRaw = localStorage.getItem('skillgrow_registered_users');
       const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
 
-      // Check if matches registered user
       const matchedUser = registeredUsers.find(
         (u: any) =>
           u.id?.toUpperCase() === trimmedInput.toUpperCase() ||
@@ -84,11 +114,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
-      // Allow demo sponsor ID 'SGIND0023' or 'GK-154893' or any valid format for instant test
+      // Default master login for sponsor
       if (
         trimmedInput.toUpperCase() === 'SGIND0023' ||
-        trimmedInput.toUpperCase() === 'GK-154893' ||
-        trimmedInput.toUpperCase() === 'ROSHNI' ||
+        trimmedInput.toUpperCase() === 'ADMIN' ||
         trimmedInput.includes('@')
       ) {
         setSuccessMessage('Login Successful! Redirecting to your dashboard...');
@@ -98,9 +127,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         return;
       }
 
-      // If not found in registered users
       setErrorMessage(
-        'Account not found. Please check your GK ID / Email or click "Register for free" with referral code SGIND0023.'
+        'Account not found. Please check your SG ID / Email or click "Register for free" with referral code SGIND0023.'
       );
     } catch {
       onLoginSuccess();
@@ -110,7 +138,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail.trim()) {
-      setForgotNotice('Please enter your registered Email or GK ID.');
+      setForgotNotice('Please enter your registered Email or SG ID.');
       return;
     }
     setForgotNotice(`Password reset link & OTP sent to ${forgotEmail}. (Default test password: 123456)`);
@@ -119,10 +147,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const content = (
     <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] border border-gray-100 p-6 sm:p-8 space-y-5 relative">
       
-      {/* Top Header Row with Title and Close (X) button (from Screenshot 3) */}
+      {/* Top Header Row with Title and Close (X) button */}
       <div className="flex items-center justify-between pb-3 border-b border-gray-100">
         <h2 className="text-xl sm:text-2xl font-extrabold text-[#D97706] tracking-tight">
-          Login to GyanKamao
+          Login to Skill Grow IND
         </h2>
         <button
           type="button"
@@ -149,18 +177,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         </div>
       )}
 
-      {/* Login Form (Matching Screenshot 3) */}
+      {/* Login Form */}
       <form onSubmit={handleLogin} className="space-y-4 text-left">
-        {/* GK ID Or Email Address */}
+        {/* SG ID Or Email Address */}
         <div className="space-y-1">
           <label className="block text-xs font-semibold text-gray-800">
-            GK ID Or Email Address
+            SG ID Or Email Address
           </label>
           <input
             type="text"
-            value={gkIdOrEmail}
-            onChange={(e) => setGkIdOrEmail(e.target.value)}
-            placeholder="GK ID"
+            value={sgIdOrEmail}
+            onChange={(e) => setSgIdOrEmail(e.target.value)}
+            placeholder="SG ID"
             className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             required
           />
@@ -221,7 +249,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <div className="flex space-x-2">
               <input
                 type="text"
-                placeholder="Enter GK ID or Email"
+                placeholder="Enter SG ID or Email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
                 className="flex-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs"
@@ -256,12 +284,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="button"
             onClick={() => {
-              setGkIdOrEmail('GK-154893');
+              setSgIdOrEmail('SGIND0023');
               setPassword('123456');
             }}
             className="text-[11px] text-gray-500 hover:text-orange-600 underline font-medium"
           >
-            Use Demo Login: GK-154893 / 123456
+            Quick Login with Sponsor: SGIND0023 / 123456
           </button>
         </div>
       </form>

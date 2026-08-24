@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import confetti from 'canvas-confetti';
+import { submitKycToFirestore } from '../lib/firestoreService';
 
 interface KycPageProps {
   profile: UserProfile;
@@ -32,6 +33,17 @@ export const KycPage: React.FC<KycPageProps> = ({ profile, onUpdateKyc, onNaviga
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateKyc(upi.trim(), bank.trim(), ifsc.trim().toUpperCase());
+
+    // Sync directly to Cloud Firestore Database
+    submitKycToFirestore(profile.referralId || 'user', {
+      bankName: bankName.trim(),
+      accountNumber: bank.trim(),
+      ifscCode: ifsc.trim().toUpperCase(),
+      upiId: upi.trim(),
+    }).catch((err) => {
+      console.warn('Firestore KYC sync error:', err);
+    });
+
     setSaved(true);
 
     try {

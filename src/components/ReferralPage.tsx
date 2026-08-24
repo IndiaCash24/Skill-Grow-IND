@@ -14,19 +14,28 @@ import {
   CheckCircle2,
   Layers,
   ArrowUpRight,
+  TrendingUp,
+  Percent,
 } from 'lucide-react';
-import { UserProfile } from '../types';
+import { UserProfile, TeamMember } from '../types';
+import { initialTeamMembers } from '../data/defaultData';
 import confetti from 'canvas-confetti';
 
 interface ReferralPageProps {
   profile: UserProfile;
+  teamMembers?: TeamMember[];
   onNavigate: (view: any) => void;
 }
 
-export const ReferralPage: React.FC<ReferralPageProps> = ({ profile, onNavigate }) => {
+export const ReferralPage: React.FC<ReferralPageProps> = ({
+  profile,
+  teamMembers = initialTeamMembers,
+  onNavigate,
+}) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [downloadedBanner, setDownloadedBanner] = useState<string | null>(null);
+  const [teamTab, setTeamTab] = useState<'ALL' | 'Tier 1' | 'Tier 2'>('ALL');
 
   const referralLink = `https://skillgrowind.com/register?ref=${profile.referralId}`;
 
@@ -79,6 +88,14 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ profile, onNavigate 
     setTimeout(() => setDownloadedBanner(null), 2500);
   };
 
+  const filteredTeam = teamMembers.filter((m) => {
+    if (teamTab === 'Tier 1') return m.tier.includes('Tier 1');
+    if (teamTab === 'Tier 2') return m.tier.includes('Tier 2');
+    return true;
+  });
+
+  const totalTeamCommission = teamMembers.reduce((sum, m) => sum + m.commissionEarned, 0);
+
   const marketingBanners = [
     {
       id: 'story-1',
@@ -98,7 +115,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ profile, onNavigate 
       id: 'banner-1',
       title: 'WhatsApp Group Invitation Banner',
       ratio: '16:9 Landscape Format',
-      description: 'Header banner for Telegram and WhatsApp community groups highlighting up to 90% commissions.',
+      description: 'Header banner for Telegram and WhatsApp community groups highlighting up to 70% direct commissions.',
       bgGradient: 'from-emerald-700 via-teal-800 to-slate-950',
     },
   ];
@@ -110,221 +127,224 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({ profile, onNavigate 
         <div className="max-w-4xl mx-auto space-y-3">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => onNavigate('home')}
+              onClick={() => onNavigate('dashboard')}
               className="inline-flex items-center space-x-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-full transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Home</span>
+              <span>Back to Dashboard</span>
             </button>
 
             <span className="text-[11px] font-bold bg-pink-500 text-white px-2.5 py-0.5 rounded-full flex items-center space-x-1">
               <Sparkles className="w-3 h-3" />
-              <span>Up to 90% Commission</span>
+              <span>Up to 70% Direct Commission</span>
             </span>
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight uppercase">
-              Affiliate Links & Marketing Kit
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight uppercase flex items-center space-x-2">
+              <span>Affiliate Referral Hub & My Team</span>
             </h1>
             <p className="text-xs sm:text-sm text-indigo-100">
-              Share your custom tracking link, scan QR codes, and download ready-to-post banners for social media.
+              Share your custom tracking link, scan QR codes, download promo posters, and manage your active downline team.
             </p>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        
         {/* Referral Link & Quick Actions Card */}
         <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-6 shadow-sm space-y-5">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
-              <Link2 className="w-4 h-4" />
-            </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900">Your Unique Affiliate Link</h3>
-              <p className="text-xs text-gray-500">Every signup through this URL automatically credits commission to you.</p>
+              <h3 className="text-base font-black text-slate-900">Your Official Affiliate Tracking Link</h3>
+              <p className="text-xs text-gray-500">Every student who enrolls through this link gives you instant commission</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500 font-bold">Your Sponsor Code:</span>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="bg-purple-100 text-purple-800 font-mono font-black text-xs px-2.5 py-1 rounded-lg hover:bg-purple-200 transition-colors flex items-center space-x-1"
+              >
+                <span>{profile.referralId}</span>
+                {copiedCode ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+              </button>
             </div>
           </div>
 
           {/* Link Box */}
-          <div className="space-y-2">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex-1 bg-slate-50 border border-gray-200 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
-                <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate select-all">
-                  {referralLink}
-                </span>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 shrink-0 ml-2">
-                  ACTIVE
-                </span>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                readOnly
+                value={referralLink}
+                className="w-full bg-gray-50 border border-gray-300 rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-slate-800 select-all outline-hidden"
+              />
+            </div>
 
-              <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className={`px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
+                copiedLink
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+              }`}
+            >
+              {copiedLink ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Link</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={shareOnWhatsApp}
+              className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 shadow-emerald-500/20"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Share on WhatsApp</span>
+            </button>
+          </div>
+
+          {/* QR Code & In-person Referral Box */}
+          <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1 text-center sm:text-left">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-pink-400">
+                In-Person & Live Seminar QR Code
+              </span>
+              <h4 className="font-bold text-sm sm:text-base">Scan to Enroll Directly in Your Downline</h4>
+              <p className="text-xs text-gray-300 max-w-md">
+                Show this dynamic QR code to prospects in colleges, seminars, or offline meetings for instant onboarding.
+              </p>
+            </div>
+
+            <div className="bg-white p-2.5 rounded-2xl shadow-lg shrink-0">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(referralLink)}`}
+                alt="Affiliate QR Code"
+                className="w-20 h-20 sm:w-24 sm:h-24"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: My Referred Team & Downlines */}
+        <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+                <Users className="w-4 h-4 text-purple-600" />
+                <span>My Active Team & Downline ({teamMembers.length} Members)</span>
+              </h3>
+              <p className="text-xs text-gray-500">Total Team Commission Earned: <span className="font-bold text-emerald-600">₹{totalTeamCommission.toLocaleString('en-IN')}</span></p>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl">
+              {(['ALL', 'Tier 1', 'Tier 2'] as const).map((tab) => (
                 <button
-                  onClick={handleCopyLink}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-xs ${
-                    copiedLink
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  key={tab}
+                  type="button"
+                  onClick={() => setTeamTab(tab)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                    teamTab === tab
+                      ? 'bg-white text-purple-700 shadow-xs'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
+                  {tab === 'ALL' ? 'All Members' : tab === 'Tier 1' ? 'Direct (Tier 1)' : 'Passive (Tier 2)'}
                 </button>
-
-                <button
-                  onClick={shareOnWhatsApp}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp</span>
-                </button>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Referral Code Quick Copy Box */}
-          <div className="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] text-orange-300 font-semibold uppercase tracking-wider">
-                Direct Referral Code
-              </p>
-              <h4 className="text-xl font-black tracking-widest text-white mt-0.5">
-                {profile.referralId}
-              </h4>
-            </div>
-
-            <button
-              onClick={handleCopyCode}
-              className="inline-flex items-center justify-center space-x-1.5 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors"
-            >
-              {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedCode ? 'Code Copied!' : 'Copy Referral ID'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* QR Code & Scan to Register Box */}
-        <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-36 h-36 bg-white p-3 rounded-2xl border-2 border-dashed border-indigo-300 flex flex-col items-center justify-center shadow-xs shrink-0">
-            <QrCode className="w-24 h-24 text-indigo-950" />
-            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1 tracking-wider">
-              {profile.referralId}
-            </span>
-          </div>
-
-          <div className="space-y-3 text-center sm:text-left flex-1">
-            <div>
-              <h4 className="text-base font-extrabold text-slate-900">
-                Instant Scan & Register QR Code
-              </h4>
-              <p className="text-xs text-gray-600 mt-1">
-                Save this QR code and paste it on your promotional YouTube shorts, Instagram highlights, and personal business cards.
-              </p>
-            </div>
-
-            <button
-              onClick={() => handleDownloadBanner('qr-code')}
-              className="inline-flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs px-4 py-2.5 rounded-xl transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>{downloadedBanner === 'qr-code' ? 'QR Code Saved! ✓' : 'Save QR Code (PNG)'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Promotional Marketing Posters */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">
-                Official Marketing Creative Banners
-              </h3>
-              <p className="text-xs text-gray-500">HD Ready graphics with your tracking ID</p>
-            </div>
-            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
-              3 Templates Ready
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {marketingBanners.map((banner) => (
+          <div className="space-y-2">
+            {filteredTeam.map((member) => (
               <div
-                key={banner.id}
-                className="bg-white rounded-2xl border border-gray-200/90 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+                key={member.id}
+                className="flex items-center justify-between p-3.5 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <div className={`p-6 bg-gradient-to-br ${banner.bgGradient} text-white flex flex-col justify-between h-44 relative overflow-hidden`}>
-                  <div className="flex justify-between items-start">
-                    <span className="font-['Poppins'] font-black text-sm">
-                      <span className="text-orange-400">Skill</span>Grow IND
-                    </span>
-                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">
-                      {banner.ratio}
-                    </span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                    <img
+                      src={member.avatar}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-
-                  <div className="space-y-1">
-                    <p className="text-[11px] text-amber-300 font-bold tracking-wider uppercase">
-                      Earn with Skill Grow
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-slate-900">{member.name}</h4>
+                    <p className="text-[11px] text-gray-500">
+                      {member.package} • <span className="font-semibold text-purple-700">{member.tier}</span> • Joined {member.joinedDate}
                     </p>
-                    <p className="text-xs font-black text-white leading-tight">
-                      Start Your Digital Income Today!
-                    </p>
-                    <p className="text-[9px] text-gray-300">Ref Code: {profile.referralId}</p>
                   </div>
                 </div>
 
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-900">{banner.title}</h5>
-                    <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{banner.description}</p>
-                  </div>
-
-                  <button
-                    onClick={() => handleDownloadBanner(banner.id)}
-                    className="w-full inline-flex items-center justify-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2 rounded-xl transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>
-                      {downloadedBanner === banner.id ? 'Banner Downloaded! ✓' : 'Download Graphic'}
-                    </span>
-                  </button>
+                <div className="text-right">
+                  <span className="text-xs sm:text-sm font-black text-emerald-600 block">
+                    + ₹ {member.commissionEarned.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">
+                    Commission Paid
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Affiliate Commission Breakdown Card */}
-        <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-6 shadow-sm space-y-4">
-          <h4 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-            Affiliate Commission Structure
-          </h4>
+        {/* Section 3: High-Converting Marketing Kits & Banners */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>Official Skill Grow IND Promo Kits</span>
+            </h3>
+            <span className="text-xs text-gray-500">High-Converting Creatives</span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-900 uppercase">Direct Commission</span>
-                <span className="text-lg font-black text-emerald-600">Up to 80%</span>
-              </div>
-              <p className="text-[11px] text-emerald-700">
-                Directly earned on every course enrollment made with your sponsor referral ID.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {marketingBanners.map((banner) => (
+              <div
+                key={banner.id}
+                className="bg-white rounded-3xl border border-gray-200/90 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+              >
+                <div className={`p-6 bg-gradient-to-br ${banner.bgGradient} text-white space-y-3 relative`}>
+                  <span className="text-[9px] font-bold uppercase bg-white/20 px-2 py-0.5 rounded-full inline-block">
+                    {banner.ratio}
+                  </span>
+                  <div className="font-black text-sm sm:text-base leading-tight">
+                    {banner.title}
+                  </div>
+                  <div className="text-[10px] text-gray-300 font-mono">
+                    Sponsor Code: {profile.referralId}
+                  </div>
+                </div>
 
-            <div className="bg-purple-50 border border-purple-200 p-4 rounded-2xl space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-purple-900 uppercase">Passive Commission</span>
-                <span className="text-lg font-black text-purple-600">Up to 15%</span>
+                <div className="p-4 space-y-3">
+                  <p className="text-[11px] text-gray-600 line-clamp-2">{banner.description}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadBanner(banner.id)}
+                    className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-slate-800 font-bold text-xs rounded-xl transition-colors flex items-center justify-center space-x-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>{downloadedBanner === banner.id ? 'Downloaded!' : 'Download Banner'}</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-[11px] text-purple-700">
-                Tier-2 team performance bonus credited automatically when your direct team members close enrollments.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
-
       </div>
     </div>
   );
