@@ -46,7 +46,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   onRegisterSuccess,
   onNavigateToLogin,
   onNavigateToHome,
-  initialReferralCode = 'SGIND0023',
+  initialReferralCode = '',
 }) => {
   const [sponsorCode, setSponsorCode] = useState(initialReferralCode);
   const [fullName, setFullName] = useState('');
@@ -63,13 +63,13 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Validate referral code (Must be SGIND0023 or existing registered user)
+  // Validate referral code (Optional: valid if empty or valid code)
   const validateReferralCode = (code: string) => {
     const trimmed = code.trim().toUpperCase();
-    if (!trimmed) return false;
-    if (trimmed === 'SGIND0023') return true;
+    if (!trimmed) return true; // Optional - empty is completely valid
+    if (trimmed === 'SGIND0023' || trimmed === 'DIRECT') return true;
 
-    // Check existing stored users
+    // Check existing stored users or allow valid alphanumeric code
     try {
       const stored = localStorage.getItem('skillgrow_registered_users');
       if (stored) {
@@ -81,7 +81,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     } catch {
       // ignore
     }
-    return false;
+    return trimmed.length >= 3;
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -89,45 +89,39 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     setErrorMessage('');
     setSuccessMessage('');
 
-    const trimmedSponsorCode = sponsorCode.trim().toUpperCase();
+    const rawSponsorCode = sponsorCode.trim().toUpperCase();
+    // If referral code is provided, use it. If not provided, fallback to default official sponsor
+    const finalSponsorCode = rawSponsorCode ? rawSponsorCode : 'SGIND0023';
+    const sponsorDisplayName = rawSponsorCode
+      ? (rawSponsorCode === 'SGIND0023' ? 'Skill Grow Official Sponsor' : `Sponsor (${rawSponsorCode})`)
+      : 'Direct / Official (Skill Grow IND)';
 
-    // 1. Referral code validation (Strict Requirement)
-    if (!trimmedSponsorCode) {
-      setErrorMessage('SG ID / Referral Code is mandatory! Enter referral code: SGIND0023');
-      return;
-    }
-
-    if (!validateReferralCode(trimmedSponsorCode)) {
-      setErrorMessage('Invalid Referral / SG ID! Please enter valid referral code: SGIND0023');
-      return;
-    }
-
-    // 2. Full Name validation
+    // 1. Full Name validation
     if (!fullName.trim()) {
       setErrorMessage('Please enter your Full Name.');
       return;
     }
 
-    // 3. Phone validation
+    // 2. Phone validation
     const cleanedPhone = phoneNumber.replace(/\D/g, '');
     if (cleanedPhone.length < 10) {
       setErrorMessage('Please enter a valid 10-digit Phone Number.');
       return;
     }
 
-    // 4. Email validation
+    // 3. Email validation
     if (!emailId.trim() || !emailId.includes('@')) {
       setErrorMessage('Please enter a valid Email Id.');
       return;
     }
 
-    // 5. State validation
+    // 4. State validation
     if (!state) {
       setErrorMessage('Please select your State.');
       return;
     }
 
-    // 6. Password validation
+    // 5. Password validation
     if (!password || password.length < 4) {
       setErrorMessage('Password must be at least 4 characters long.');
       return;
@@ -138,7 +132,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
-    // 7. Terms acceptance
+    // 6. Terms acceptance
     if (!acceptTerms) {
       setErrorMessage('You must accept the Terms & Conditions and Privacy Policy.');
       return;
@@ -161,8 +155,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         month: 'long',
         year: 'numeric',
       }),
-      sponsorName: trimmedSponsorCode === 'SGIND0023' ? 'Skill Grow Official Sponsor' : 'Skill Grow Partner',
-      sponsorId: trimmedSponsorCode,
+      sponsorName: sponsorDisplayName,
+      sponsorId: finalSponsorCode,
       kycStatus: 'Pending',
       upiId: '',
       bankAccount: '',
@@ -176,7 +170,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       email: emailId.trim().toLowerCase(),
       phone: phoneNumber.trim(),
       userCode: newReferralId,
-      sponsorCode: trimmedSponsorCode,
+      sponsorCode: finalSponsorCode,
       state: state,
       packageTier: 'SILVER PACKAGE',
     }).catch((err) => {
@@ -195,7 +189,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         phone: phoneNumber.trim(),
         state: state,
         password: password,
-        sponsorId: trimmedSponsorCode,
+        sponsorId: finalSponsorCode,
         createdAt: new Date().toISOString(),
       });
       localStorage.setItem('skillgrow_registered_users', JSON.stringify(registeredUsers));
@@ -260,26 +254,31 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         )}
 
         <form onSubmit={handleRegister} className="space-y-4 text-left">
-          {/* SG ID / Referral Code */}
+          {/* SG ID / Referral Code (Optional) */}
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-gray-800">
-              SG ID <span className="text-xs text-gray-400 font-normal">(Sponsor / Referral Code)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-gray-800">
+                SG ID / Referral Code <span className="text-xs text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <span className="text-[10px] text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                Optional
+              </span>
+            </div>
             <input
               type="text"
               value={sponsorCode}
               onChange={(e) => setSponsorCode(e.target.value)}
-              placeholder="SGIND0023"
+              placeholder="e.g. SGIND0023 (Optional)"
               className="w-full px-4 py-3 bg-[#FAFAFA] border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
             <div className="flex items-center justify-between text-[10px] text-gray-500 pt-0.5">
-              <span>Default Sponsor: <strong className="text-orange-600 font-bold">SGIND0023</strong></span>
-              {validateReferralCode(sponsorCode) ? (
+              <span>Agar referral code nahi hai toh khali chhod sakte hain</span>
+              {sponsorCode.trim() ? (
                 <span className="text-emerald-600 font-semibold flex items-center gap-0.5">
-                  <CheckCircle2 className="w-3 h-3" /> Valid Sponsor
+                  <CheckCircle2 className="w-3 h-3" /> Sponsor Applied
                 </span>
               ) : (
-                <span className="text-amber-600 font-medium">Mandatory to Register</span>
+                <span className="text-blue-600 font-medium">Direct Join (Official)</span>
               )}
             </div>
           </div>

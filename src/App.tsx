@@ -527,7 +527,7 @@ export default function App() {
                 setActiveView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              initialReferralCode={profile.referralId || 'SGIND0023'}
+              initialReferralCode=""
             />
           )}
 
