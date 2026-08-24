@@ -1,0 +1,118 @@
+{
+  "$schema": "https://firebase.google.com/docs/firestore/blueprint.schema.json",
+  "entities": {
+    "users": {
+      "description": "User profile, KYC status, and aggregated wallet figures (scale-optimized)",
+      "fields": {
+        "uid": { "type": "string", "description": "Auth UID" },
+        "userCode": { "type": "string", "description": "Unique Referral Code, e.g., SGIND0023" },
+        "name": { "type": "string", "description": "Full name" },
+        "email": { "type": "string", "description": "Email address" },
+        "phone": { "type": "string", "description": "Mobile number with country code" },
+        "role": { "type": "string", "description": "affiliate | mentor | admin" },
+        "sponsorId": { "type": "string", "description": "UID of the sponsor/referrer" },
+        "sponsorCode": { "type": "string", "description": "Referral code used to sign up" },
+        "activePackage": { "type": "string", "description": "silver | gold | diamond | platinum | pro | elite | free" },
+        "avatarUrl": { "type": "string", "description": "Profile picture URL" },
+        "wallet": {
+          "type": "map",
+          "description": "Read-optimized cached balances (verified by server ledger)",
+          "fields": {
+            "allTimeEarnings": { "type": "number" },
+            "todayEarnings": { "type": "number" },
+            "last7Days": { "type": "number" },
+            "last30Days": { "type": "number" },
+            "availableForPayout": { "type": "number" },
+            "paidOutTotal": { "type": "number" }
+          }
+        },
+        "kyc": {
+          "type": "map",
+          "description": "KYC Verification details",
+          "fields": {
+            "status": { "type": "string", "description": "verified | pending | rejected | unsubmitted" },
+            "bankName": { "type": "string" },
+            "accountNumber": { "type": "string" },
+            "ifscCode": { "type": "string" },
+            "upiId": { "type": "string" },
+            "panNumber": { "type": "string" },
+            "aadhaarNumber": { "type": "string" },
+            "verifiedAt": { "type": "timestamp" }
+          }
+        },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    },
+    "referrals": {
+      "description": "Subcollection under /users/{userId}/referrals to avoid 1MB document size limits for power affiliates with 10k+ referrals",
+      "fields": {
+        "referredUserId": { "type": "string" },
+        "referredUserName": { "type": "string" },
+        "referredUserEmail": { "type": "string" },
+        "packagePurchased": { "type": "string" },
+        "commissionEarned": { "type": "number" },
+        "tier": { "type": "number", "description": "1 (Direct) or 2 (Passive)" },
+        "timestamp": { "type": "timestamp" }
+      }
+    },
+    "transactions": {
+      "description": "Subcollection under /users/{userId}/transactions for paginated ledger history (limit & startAfter)",
+      "fields": {
+        "transactionId": { "type": "string" },
+        "type": { "type": "string", "description": "commission_direct | commission_passive | payout_withdrawal | package_purchase" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "description": "completed | pending | failed" },
+        "description": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "timestamp": { "type": "timestamp" }
+      }
+    },
+    "payoutRequests": {
+      "description": "Top-level collection for admin approval and banking batch processing",
+      "fields": {
+        "payoutId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userCode": { "type": "string" },
+        "amount": { "type": "number" },
+        "payoutMethod": { "type": "string", "description": "UPI | IMPS_BANK" },
+        "destination": { "type": "string", "description": "UPI ID or Bank Account" },
+        "status": { "type": "string", "description": "requested | processing | completed | rejected" },
+        "utrNumber": { "type": "string" },
+        "requestedAt": { "type": "timestamp" },
+        "processedAt": { "type": "timestamp" }
+      }
+    },
+    "shardedCounters": {
+      "description": "High-concurrency sharded counters (1 write/sec bypass for 100M+ users)",
+      "fields": {
+        "counterName": { "type": "string", "description": "global_active_affiliates | global_payouts_distributed | package_sales_{packageId}" },
+        "shardIndex": { "type": "number", "description": "0 to numShards - 1" },
+        "count": { "type": "number" },
+        "sum": { "type": "number" }
+      }
+    },
+    "leaderboard": {
+      "description": "Read-optimized periodic aggregation for top 100 earners (Day, Week, All-Time)",
+      "fields": {
+        "period": { "type": "string", "description": "today | weekly | allTime" },
+        "topAffiliates": {
+          "type": "array",
+          "items": {
+            "type": "map",
+            "fields": {
+              "rank": { "type": "number" },
+              "userId": { "type": "string" },
+              "name": { "type": "string" },
+              "userCode": { "type": "string" },
+              "avatarUrl": { "type": "string" },
+              "earnings": { "type": "number" }
+            }
+          }
+        },
+        "updatedAt": { "type": "timestamp" }
+      }
+    }
+  }
+}

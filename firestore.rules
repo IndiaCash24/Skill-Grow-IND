@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.email == 'admin@skillgrowind.com');
+    }
+
+    // 1. Users collection
+    match /users/{userId} {
+      // Any authenticated user or sponsor lookup can read basic profile
+      allow read: if isAuthenticated();
+
+      // Users can only create their initial profile, without spoofing wallet balances or admin role
+      allow create: if isOwner(userId) && 
+        request.resource.data.role == 'affiliate' &&
+        request.resource.data.wallet.allTimeEarnings == 0 &&
+        request.resource.data.wallet.todayEarnings == 0 &&
+        request.resource.data.wallet.availableForPayout == 0;
+
+      // Users can only update their own non-critical profile fields (name, avatar, phone, kyc input)
+      // Wallet values and role CANNOT be modified by client updates
+      allow update: if isOwner(userId) && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['wallet', 'role', 'activePackage', 'sponsorId']) || isAdmin();
+
+      allow delete: if isAdmin();
+
+      // Sub-collection: Referrals
+      match /referrals/{referralId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Created only via Cloud Functions / Server Transactions
+      }
+
+      // Sub-collection: Transactions Ledger
+      match /transactions/{transactionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Written strictly by server transactions
+      }
+    }
+
+    // 2. Top-level Payout Requests
+    match /payoutRequests/{payoutId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Affiliates can create a payout request with status 'requested'
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'requested' &&
+        request.resource.data.amount >= 500;
+
+      // Only Admin or Cloud Functions can approve/update status or UTR
+      allow update, delete: if isAdmin();
+    }
+
+    // 3. Sharded Counters (High concurrency metrics)
+    match /shardedCounters/{counterId}/shards/{shardId} {
+      allow read: if true; // Public stats (total affiliates, total paid out)
+      allow write: if isAdmin(); // Updated by server/atomic increments
+    }
+
+    // 4. Leaderboard Cache
+    match /leaderboard/{period} {
+      allow read: if true; // Public read for all users
+      allow write: if isAdmin();
+    }
+
+    // 5. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
