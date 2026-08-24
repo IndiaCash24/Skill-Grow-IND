@@ -71,70 +71,106 @@ export const initialProfile: UserProfile = {
   aadhaarNumber: '•••• •••• 8912',
 };
 
-// 10 High Quality Cartoon Character Avatars (5 Men / Boys & 5 Women / Girls)
+// High Quality Cartoon & 3D Character Avatars (Boys / Men & Girls / Women)
 export const avatarPresets = [
-  // 5 Men / Boys Cartoon Character Avatars
+  // 8 Boys / Men Cartoon Character Avatars
   {
     id: 'av-boy-1',
     gender: 'men',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=blazerAndShirt&facialHair=beardLight',
-    label: 'Bearded Pro Guy',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=blazerAndShirt&facialHair=beardLight&backgroundColor=b6e3f4',
+    label: 'Corporate Pro Guy',
   },
   {
     id: 'av-boy-2',
     gender: 'men',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Brian&clothing=collarAndSweater&top=shortCurly',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Brian&clothing=collarAndSweater&top=shortCurly&backgroundColor=c0aede',
     label: 'Smart Curly Guy',
   },
   {
     id: 'av-boy-3',
     gender: 'men',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&clothing=hoodie&top=shortFlat',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&clothing=hoodie&top=shortFlat&backgroundColor=d1d4f9',
     label: 'Casual Hoodie Boy',
   },
   {
     id: 'av-boy-4',
     gender: 'men',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David&clothing=blazerAndShirt&accessories=glasses',
-    label: 'Business Specs Boy',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David&clothing=blazerAndShirt&accessories=prescription02&backgroundColor=ffd5dc',
+    label: 'Business Specs Guy',
   },
   {
     id: 'av-boy-5',
     gender: 'men',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Christian&clothing=graphicShirt&top=theCaesar',
-    label: 'Modern Cool Boy',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Christian&clothing=graphicShirt&top=theCaesar&backgroundColor=ffdfbf',
+    label: 'Modern Cool Guy',
+  },
+  {
+    id: 'av-boy-6',
+    gender: 'men',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mason&clothing=crewNeck&top=shortWaved&facialHair=goatee&backgroundColor=b6e3f4',
+    label: 'Leader Goatee Guy',
+  },
+  {
+    id: 'av-boy-7',
+    gender: 'men',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&clothing=collarAndSweater&top=frizzle&backgroundColor=c0aede',
+    label: 'Creative Guy',
+  },
+  {
+    id: 'av-boy-8',
+    gender: 'men',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver&clothing=hoodie&top=shaggy&accessories=eyepatch&backgroundColor=d1d4f9',
+    label: 'Energetic Tech Guy',
   },
 
-  // 5 Women / Girls Cartoon Character Avatars
+  // 8 Girls / Women Cartoon Character Avatars
   {
     id: 'av-girl-1',
     gender: 'girl',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sara&clothing=overall&top=longStraightStrand',
-    label: 'Trendy Long Hair Girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sara&clothing=blazerAndShirt&top=longStraightStrand&backgroundColor=ffd5dc',
+    label: 'Executive Lady',
   },
   {
     id: 'av-girl-2',
     gender: 'girl',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aria&clothing=collarAndSweater&top=curvy',
-    label: 'Curly Hair Girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aria&clothing=collarAndSweater&top=curvy&backgroundColor=ffdfbf',
+    label: 'Curly Style Girl',
   },
   {
     id: 'av-girl-3',
     gender: 'girl',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya&clothing=blazerAndShirt&top=bob',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya&clothing=blazerAndShirt&top=bob&backgroundColor=b6e3f4',
     label: 'Boss Bob Hair Girl',
   },
   {
     id: 'av-girl-4',
     gender: 'girl',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe&clothing=hoodie&top=straight01',
-    label: 'Chill Hoodie Girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe&clothing=hoodie&top=straight01&backgroundColor=c0aede',
+    label: 'Trendy Hoodie Girl',
   },
   {
     id: 'av-girl-5',
     gender: 'girl',
-    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia&clothing=graphicShirt&top=dreads01',
-    label: 'Creative Style Girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia&clothing=overall&top=dreads01&backgroundColor=ffd5dc',
+    label: 'Creative Fashion Girl',
+  },
+  {
+    id: 'av-girl-6',
+    gender: 'girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma&clothing=collarAndSweater&top=bun&accessories=prescription01&backgroundColor=ffdfbf',
+    label: 'Scholar Specs Girl',
+  },
+  {
+    id: 'av-girl-7',
+    gender: 'girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia&clothing=blazerAndShirt&top=straight02&backgroundColor=d1d4f9',
+    label: 'Marketing Star Girl',
+  },
+  {
+    id: 'av-girl-8',
+    gender: 'girl',
+    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia&clothing=graphicShirt&top=curly&backgroundColor=b6e3f4',
+    label: 'Dynamic Creator Girl',
   },
 ];
 
