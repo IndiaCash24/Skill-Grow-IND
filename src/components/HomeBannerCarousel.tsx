@@ -169,18 +169,18 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
           <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="max-w-4xl mx-auto flex flex-col items-center text-center space-y-4 relative z-10">
+          <div className="max-w-5xl xl:max-w-6xl mx-auto flex flex-col items-center text-center space-y-4 sm:space-y-6 relative z-10 py-2 sm:py-4">
             
             {/* Top Brand Label & Event Badge */}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <div className="flex items-center space-x-1 text-xs font-semibold text-gray-300">
+              <div className="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-300">
                 <span>Skill</span>
                 <span className="text-orange-400 font-bold">Grow</span>
-                <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.2 rounded font-bold">IND</span>
+                <span className="text-[10px] sm:text-xs bg-white/20 text-white px-1.5 py-0.5 rounded font-bold">IND</span>
               </div>
               <span className="text-gray-400 text-xs hidden sm:inline">·</span>
               <div
-                className={`inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-bold border backdrop-blur-md ${currentBanner.badgeColor}`}
+                className={`inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-bold border backdrop-blur-md ${currentBanner.badgeColor}`}
               >
                 <BadgeIcon className="w-3.5 h-3.5" />
                 <span>{currentBanner.badge}</span>
@@ -188,8 +188,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             </div>
 
             {/* Main Headline */}
-            <div className="space-y-1 max-w-2xl">
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white uppercase drop-shadow-md leading-tight">
+            <div className="space-y-2 max-w-3xl">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase drop-shadow-md leading-tight">
                 {currentBanner.titlePrefix}{' '}
                 <span
                   className={`bg-gradient-to-r ${currentBanner.accentColor} bg-clip-text text-transparent`}
@@ -198,39 +198,39 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 </span>{' '}
                 {currentBanner.titleSuffix}
               </h1>
-              <p className="text-xs sm:text-sm text-gray-200 font-medium">
+              <p className="text-xs sm:text-base text-gray-200 font-medium max-w-2xl mx-auto">
                 {currentBanner.tagline}
               </p>
-              <p className="text-[11px] sm:text-xs text-gray-300 max-w-xl mx-auto font-normal pt-0.5 leading-relaxed hidden sm:block">
+              <p className="text-[11px] sm:text-sm text-gray-300 max-w-2xl mx-auto font-normal pt-1 leading-relaxed hidden sm:block">
                 {currentBanner.description}
               </p>
             </div>
 
             {/* 4 Feature Badges Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full max-w-2xl pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 w-full max-w-3xl pt-1 sm:pt-2">
               {currentBanner.features.map((feat, idx) => {
                 const FeatIcon = feat.icon;
                 return (
                   <div
                     key={idx}
-                    className="bg-white/10 hover:bg-white/15 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 flex flex-col items-center text-center transition-all"
+                    className="bg-white/10 hover:bg-white/15 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col items-center text-center transition-all shadow-xs"
                   >
-                    <FeatIcon className="w-4 h-4 text-amber-300 mb-1" />
-                    <span className="text-[11px] font-bold text-white leading-snug">
+                    <FeatIcon className="w-5 h-5 text-amber-300 mb-1.5" />
+                    <span className="text-xs sm:text-sm font-bold text-white leading-snug">
                       {feat.label}
                     </span>
-                    <span className="text-[9px] text-gray-300">{feat.sub}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-300 mt-0.5">{feat.sub}</span>
                   </div>
                 );
               })}
             </div>
 
             {/* Action Buttons: STRICT INTENT: Affiliate Dashboard ONLY for Logged In Users */}
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3 text-xs">
+            <div className="pt-2 sm:pt-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
               <button
                 type="button"
                 onClick={currentBanner.primaryBtnAction}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-6 py-2.5 rounded-full shadow-lg transition-transform active:scale-95 flex items-center space-x-1.5 cursor-pointer"
+                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-7 py-3 rounded-full shadow-lg transition-transform active:scale-95 flex items-center space-x-2 cursor-pointer"
               >
                 <span>{currentBanner.primaryBtnText}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -242,7 +242,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                   type="button"
                   id="home-affiliate-dashboard-btn"
                   onClick={onNavigateToDashboard}
-                  className="bg-white/15 hover:bg-white/25 text-white font-semibold px-5 py-2.5 rounded-full border border-white/20 transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-white font-semibold px-6 py-3 rounded-full border border-white/20 transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
                 >
                   <LayoutDashboard className="w-4 h-4 text-pink-300" />
                   <span>{currentBanner.secondaryBtnTextLoggedIn} ➔</span>
@@ -253,9 +253,9 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                   type="button"
                   id="home-guest-login-btn"
                   onClick={onOpenLogin}
-                  className="bg-white/15 hover:bg-white/25 text-amber-200 hover:text-white font-semibold px-5 py-2.5 rounded-full border border-white/20 transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-amber-200 hover:text-white font-semibold px-6 py-3 rounded-full border border-white/20 transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-amber-300" />
+                  <LogIn className="w-4 h-4 text-amber-300" />
                   <span>{currentBanner.secondaryBtnTextGuest}</span>
                 </button>
               )}

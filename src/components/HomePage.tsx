@@ -91,24 +91,25 @@ export const HomePage: React.FC<HomePageProps> = ({
       />
 
       {/* 2. EXPLORE PREMIER COURSES SECTION HEADER (From Screenshot 1) */}
-      <section id="premier-courses-section" className="px-4 pt-8 pb-4 max-w-4xl mx-auto">
-        <div className="space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-orange-500 tracking-tight">
-            Explore Skill Grow Premier Courses
-          </h2>
+      <section id="premier-courses-section" className="px-4 sm:px-6 lg:px-8 pt-10 pb-6 max-w-6xl xl:max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-orange-500 tracking-tight">
+              Explore Skill Grow Premier Courses
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-3xl font-normal">
+              Welcome to Skill Grow's expert courses! Explore Skill Grow's distinctive selection of courses
+              designed to enhance your knowledge and transform you into a highly skilled and industry-ready professional.
+            </p>
+          </div>
 
-          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed max-w-2xl font-normal">
-            Welcome to Skill Grow's expert courses! Explore Skill Grow's distinctive selection of courses
-            designed to enhance your knowledge and transform you into a highly skilled and industry-ready professional.
-          </p>
-
-          <div className="pt-1">
+          <div className="shrink-0">
             <button
               onClick={() => {
                 const firstPackage = document.getElementById('package-silver');
                 firstPackage?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-md active:scale-95 transition-all"
+              className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-full shadow-md active:scale-95 transition-all cursor-pointer"
             >
               <span>Enroll Now</span>
               <ArrowRight className="w-4 h-4" />
@@ -117,101 +118,107 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 3. COURSES PACKAGES SHOWCASE (From Screenshot 1 & 2) */}
-      <section className="px-4 py-4 max-w-4xl mx-auto space-y-8">
-        {coursePackages.map((pkg) => (
-          <div
-            key={pkg.id}
-            id={`package-${pkg.id}`}
-            className="bg-white rounded-3xl border border-gray-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] overflow-hidden transition-all hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.12)]"
-          >
-            {/* 3D Box Illustration area */}
-            <div className="bg-gradient-to-b from-gray-50/80 via-white to-gray-50/50 border-b border-gray-100 relative">
-              <PackageBox3D pkg={pkg} />
-            </div>
-
-            {/* Package Content & Details Area */}
-            <div className="p-5 sm:p-6 space-y-4">
-              {/* Package Title */}
-              <div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-orange-500 tracking-tight uppercase">
-                  {pkg.name}
-                </h3>
-                <p className="text-xs text-gray-500 font-medium mt-0.5">{pkg.tagline}</p>
+      {/* 3. COURSES PACKAGES SHOWCASE (Responsive Grid for Laptop & Mobile) */}
+      <section className="px-4 sm:px-6 lg:px-8 py-4 max-w-6xl xl:max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {coursePackages.map((pkg) => (
+            <div
+              key={pkg.id}
+              id={`package-${pkg.id}`}
+              className="bg-white rounded-3xl border border-gray-200 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] overflow-hidden transition-all hover:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.12)] flex flex-col justify-between"
+            >
+              {/* 3D Box Illustration area */}
+              <div className="bg-gradient-to-b from-gray-50/80 via-white to-gray-50/50 border-b border-gray-100 relative">
+                <PackageBox3D pkg={pkg} />
               </div>
 
-              {/* Topics Included Pipe-separated List */}
-              <div className="border-t border-dashed border-gray-200 pt-3 pb-1">
-                <p className="text-xs sm:text-sm font-bold text-slate-800 tracking-wide leading-relaxed">
-                  {pkg.topics.join(' | ')}
-                </p>
-              </div>
-
-              {/* Support & Star Rating Row */}
-              <div className="flex items-center justify-between text-xs text-gray-600 py-1">
-                <div className="flex items-center space-x-1.5 font-medium text-slate-700">
-                  <Users className="w-4 h-4 text-slate-900" />
-                  <span>Chat & Call Support</span>
-                </div>
-
-                <div className="flex items-center space-x-1 font-semibold text-amber-600">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="text-slate-800 font-bold">{pkg.rating}</span>
-                  <span className="text-gray-400">({pkg.reviewsCount})</span>
-                </div>
-              </div>
-
-              {/* Action Buttons & Pricing Row */}
-              <div className="border-t border-dashed border-gray-200 pt-3 flex flex-wrap items-center justify-between gap-3">
-                
-                {/* Buttons: Enroll Now + View */}
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleEnrollClick(pkg)}
-                    className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-md active:scale-95 transition-all"
-                  >
-                    <span>Enroll Now</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedPackage(pkg)}
-                    className="inline-flex items-center space-x-1 border border-orange-500 text-orange-600 hover:bg-orange-50 font-bold text-xs px-4 py-2.5 rounded-full active:scale-95 transition-all"
-                  >
-                    <span>View</span>
-                    <Eye className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Right Side: Package Amount & Discount Amount */}
-                <div className="text-right flex flex-col items-end justify-center">
-                  <div className="text-xl sm:text-2xl font-black text-orange-500 tracking-tight leading-none">
-                    ₹{pkg.price.toFixed(2)} /-
+              {/* Package Content & Details Area */}
+              <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+                <div className="space-y-3">
+                  {/* Package Title */}
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-orange-500 tracking-tight uppercase">
+                      {pkg.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 font-medium mt-0.5">{pkg.tagline}</p>
                   </div>
-                  <div className="flex items-center space-x-1.5 mt-1">
-                    <span className="text-xs text-gray-400 line-through font-medium">
-                      ₹{pkg.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-1.5 py-0.5 rounded leading-none">
-                      {pkg.discountPercentage}% OFF
-                    </span>
+
+                  {/* Topics Included Pipe-separated List */}
+                  <div className="border-t border-dashed border-gray-200 pt-3 pb-1">
+                    <p className="text-xs sm:text-sm font-bold text-slate-800 tracking-wide leading-relaxed">
+                      {pkg.topics.join(' | ')}
+                    </p>
                   </div>
                 </div>
 
+                <div className="space-y-4 pt-2">
+                  {/* Support & Star Rating Row */}
+                  <div className="flex items-center justify-between text-xs text-gray-600 py-1">
+                    <div className="flex items-center space-x-1.5 font-medium text-slate-700">
+                      <Users className="w-4 h-4 text-slate-900" />
+                      <span>Chat & Call Support</span>
+                    </div>
+
+                    <div className="flex items-center space-x-1 font-semibold text-amber-600">
+                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <span className="text-slate-800 font-bold">{pkg.rating}</span>
+                      <span className="text-gray-400">({pkg.reviewsCount})</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons & Pricing Row */}
+                  <div className="border-t border-dashed border-gray-200 pt-3 flex flex-wrap items-center justify-between gap-3">
+                    
+                    {/* Buttons: Enroll Now + View */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleEnrollClick(pkg)}
+                        className="inline-flex items-center space-x-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-full shadow-md active:scale-95 transition-all cursor-pointer"
+                      >
+                        <span>Enroll</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedPackage(pkg)}
+                        className="inline-flex items-center space-x-1 border border-orange-500 text-orange-600 hover:bg-orange-50 font-bold text-xs px-3.5 py-2.5 rounded-full active:scale-95 transition-all cursor-pointer"
+                      >
+                        <span>View</span>
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Right Side: Package Amount & Discount Amount */}
+                    <div className="text-right flex flex-col items-end justify-center">
+                      <div className="text-lg sm:text-xl font-black text-orange-500 tracking-tight leading-none">
+                        ₹{pkg.price.toFixed(2)} /-
+                      </div>
+                      <div className="flex items-center space-x-1 mt-1">
+                        <span className="text-xs text-gray-400 line-through font-medium">
+                          ₹{pkg.originalPrice.toFixed(2)}
+                        </span>
+                        <span className="bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold px-1 py-0.5 rounded leading-none">
+                          {pkg.discountPercentage}% OFF
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       {/* 4. STATS COUNTER METRICS SECTION (From Screenshot 3) */}
-      <section id="stats-section" className="px-4 py-8 max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
+      <section id="stats-section" className="px-4 sm:px-6 lg:px-8 py-10 max-w-6xl xl:max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           
           {/* Card 1: 525.7k+ Total Students */}
-          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-orange-100/70 flex items-center justify-center p-3 relative">
-              <GraduationCap className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500" />
+          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-orange-100/70 flex items-center justify-center p-3 relative">
+              <GraduationCap className="w-8 h-8 sm:w-10 sm:h-10 text-orange-500" />
               <span className="absolute -bottom-1 -right-1 bg-white text-orange-600 p-1 rounded-full shadow-xs border border-orange-200">
                 <Award className="w-3.5 h-3.5" />
               </span>
@@ -227,9 +234,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Card 2: 50 Total Courses */}
-          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-amber-100/70 flex items-center justify-center p-3 relative">
-              <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500" />
+          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-amber-100/70 flex items-center justify-center p-3 relative">
+              <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" />
               <span className="absolute -bottom-1 -right-1 bg-white text-amber-600 p-1 rounded-full shadow-xs border border-amber-200">
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </span>
@@ -245,9 +252,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Card 3: 1,001 Total Videos */}
-          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-100/70 flex items-center justify-center p-3 relative">
-              <PlayCircle className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500" />
+          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-blue-100/70 flex items-center justify-center p-3 relative">
+              <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500" />
               <span className="absolute -bottom-1 -right-1 bg-white text-blue-600 p-1 rounded-full shadow-xs border border-blue-200">
                 <Video className="w-3.5 h-3.5" />
               </span>
@@ -263,9 +270,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Card 4: 569.4k+ Total Courses Watch */}
-          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-100/70 flex items-center justify-center p-3 relative">
-              <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-500" />
+          <div className="bg-[#FAF8F5] rounded-3xl p-5 sm:p-6 flex flex-col items-center text-center space-y-3 border border-orange-100/80 shadow-xs hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100/70 flex items-center justify-center p-3 relative">
+              <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-500" />
               <span className="absolute -bottom-1 -right-1 bg-white text-emerald-600 p-1 rounded-full shadow-xs border border-emerald-200">
                 <Users className="w-3.5 h-3.5" />
               </span>
@@ -284,82 +291,82 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* 5. "TRANSFORM YOUR EXPERIENCE WITH SKILL GROW" BANNER (From Screenshot 3) */}
-      <section className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 py-4 px-4 text-center text-white shadow-md">
-        <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tight drop-shadow-xs">
+      <section className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 py-6 px-4 text-center text-white shadow-md">
+        <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tight drop-shadow-xs">
           Transform Your Experience with Skill Grow
         </h3>
       </section>
 
-      {/* 6. THREE VALUE PILLAR CARDS (From Screenshot 4) */}
-      <section className="px-4 py-8 max-w-4xl mx-auto space-y-5">
-        
-        {/* Pillar 1: Learn The Essential Skills */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-orange-50 flex items-center justify-center p-4 border border-orange-200/60 shadow-xs">
-            <svg className="w-14 h-14 text-orange-500" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="42" fill="#FED7AA" fillOpacity="0.5"/>
-              <rect x="25" y="25" width="22" height="22" rx="4" fill="#F97316"/>
-              <rect x="53" y="25" width="22" height="22" rx="4" fill="#FBBF24"/>
-              <rect x="25" y="53" width="22" height="22" rx="4" fill="#F59E0B"/>
-              <rect x="53" y="53" width="22" height="22" rx="4" fill="#EA580C"/>
-            </svg>
+      {/* 6. THREE VALUE PILLAR CARDS (From Screenshot 4 - Responsive Grid for Laptop) */}
+      <section className="px-4 sm:px-6 lg:px-8 py-12 max-w-6xl xl:max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Pillar 1: Learn The Essential Skills */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4 hover:shadow-lg transition-all">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-orange-50 flex items-center justify-center p-4 border border-orange-200/60 shadow-xs">
+              <svg className="w-12 h-12 text-orange-500" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="42" fill="#FED7AA" fillOpacity="0.5"/>
+                <rect x="25" y="25" width="22" height="22" rx="4" fill="#F97316"/>
+                <rect x="53" y="25" width="22" height="22" rx="4" fill="#FBBF24"/>
+                <rect x="25" y="53" width="22" height="22" rx="4" fill="#F59E0B"/>
+                <rect x="53" y="53" width="22" height="22" rx="4" fill="#EA580C"/>
+              </svg>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Learn The Essential Skills
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
+                Like Digital Marketing, Stock Market, Graphic Designing, AI Tools, Copywriting & Video Editing
+              </p>
+              <div className="w-12 h-0.5 bg-orange-400 mx-auto mt-2 rounded-full" />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Learn The Essential Skills
-            </h4>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
-              Like Digital Marketing, Stock Market, Graphic Designing, AI Tools, Copywriting & Video Editing
-            </p>
-            <div className="w-12 h-0.5 bg-orange-400 mx-auto mt-2 rounded-full" />
+          {/* Pillar 2: Earn Certificates */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4 hover:shadow-lg transition-all">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-amber-50 flex items-center justify-center p-4 border border-amber-200/60 shadow-xs">
+              <Award className="w-10 h-10 sm:w-12 sm:h-12 text-amber-500" />
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Earn Certificates
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
+                Download the official Skill Grow course certificates and showcase your industry-ready skills to the world.
+              </p>
+              <div className="w-12 h-0.5 bg-amber-400 mx-auto mt-2 rounded-full" />
+            </div>
+          </div>
+
+          {/* Pillar 3: High Affiliate Income & Financial Growth */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4 hover:shadow-lg transition-all">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-50 flex items-center justify-center p-4 border border-emerald-200/60 shadow-xs">
+              <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-500" />
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                Earn High Affiliate Income
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
+                Promote Skill Grow courses and earn up to 70% to 85% high direct & passive commission on every sale.
+              </p>
+              <div className="w-12 h-0.5 bg-emerald-400 mx-auto mt-2 rounded-full" />
+            </div>
           </div>
         </div>
-
-        {/* Pillar 2: Earn Certificates */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-amber-50 flex items-center justify-center p-4 border border-amber-200/60 shadow-xs">
-            <Award className="w-12 h-12 text-amber-500" />
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Earn Certificates
-            </h4>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
-              Download the official Skill Grow course certificates and showcase your industry-ready skills to the world.
-            </p>
-            <div className="w-12 h-0.5 bg-amber-400 mx-auto mt-2 rounded-full" />
-          </div>
-        </div>
-
-        {/* Pillar 3: High Affiliate Income & Financial Growth */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col items-center text-center space-y-4">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-emerald-50 flex items-center justify-center p-4 border border-emerald-200/60 shadow-xs">
-            <TrendingUp className="w-12 h-12 text-emerald-500" />
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Earn High Affiliate Income
-            </h4>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
-              Promote Skill Grow courses and earn up to 70% to 85% high direct & passive commission on every sale.
-            </p>
-            <div className="w-12 h-0.5 bg-emerald-400 mx-auto mt-2 rounded-full" />
-          </div>
-        </div>
-
       </section>
 
-      {/* 7. FULL FOOTER SECTION (From Screenshot 5) */}
-      <footer id="main-footer" className="bg-[#FAF9F6] border-t border-gray-200/90 pt-10 pb-12 px-5 text-slate-800">
-        <div className="max-w-4xl mx-auto space-y-8">
+      {/* 7. FULL FOOTER SECTION (From Screenshot 5 - Multi-column Responsive for Laptop) */}
+      <footer id="main-footer" className="bg-[#FAF9F6] border-t border-gray-200/90 pt-12 pb-12 px-5 sm:px-8 text-slate-800">
+        <div className="max-w-6xl xl:max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           
-          {/* Logo & Tagline */}
-          <div className="space-y-2">
+          {/* Column 1: Logo & Tagline */}
+          <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <div className="font-['Poppins'] font-black text-2xl tracking-tight">
+              <div className="font-['Poppins'] font-black text-2xl sm:text-3xl tracking-tight">
                 <span className="text-orange-500">Skill</span>
                 <span className="text-slate-900 ml-1">Grow</span>
               </div>
@@ -369,7 +376,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <p className="text-sm text-gray-600 italic font-serif">
               Earn knowledge ! Earn money
             </p>
-            <p className="text-xs text-gray-600 max-w-md pt-1">
+            <p className="text-xs sm:text-sm text-gray-600 max-w-sm pt-1 leading-relaxed">
               Gain knowledge and embark on your skilled professional journey with India's leading e-learning platform.
             </p>
 
@@ -379,7 +386,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
+                className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
               >
                 <span className="font-bold text-xs">f</span>
               </a>
@@ -387,15 +394,15 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
+                className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
               >
-                <PlayCircle className="w-3.5 h-3.5" />
+                <PlayCircle className="w-4 h-4" />
               </a>
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
+                className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
               >
                 <span className="font-bold text-xs">ig</span>
               </a>
@@ -403,19 +410,19 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="https://telegram.org"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
+                className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:text-orange-500 hover:border-orange-500 transition-colors"
               >
                 <SendIcon />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-3 pt-2">
-            <h5 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-wide">
+          {/* Column 2: Quick Links */}
+          <div className="space-y-3">
+            <h5 className="font-extrabold text-base text-slate-900 tracking-wide">
               Quick Links
             </h5>
-            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-gray-700">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm font-semibold text-gray-700">
               {coursePackages.map((p) => (
                 <li key={p.id}>
                   <button
@@ -423,7 +430,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       const el = document.getElementById(`package-${p.id}`);
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="hover:text-orange-500 transition-colors text-left uppercase"
+                    className="hover:text-orange-500 transition-colors text-left uppercase py-0.5 cursor-pointer"
                   >
                     {p.name}
                   </button>
@@ -432,18 +439,18 @@ export const HomePage: React.FC<HomePageProps> = ({
             </ul>
           </div>
 
-          {/* Contact Us Details */}
-          <div className="space-y-3 pt-2">
-            <h5 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-wide">
+          {/* Column 3: Contact Us Details */}
+          <div className="space-y-3">
+            <h5 className="font-extrabold text-base text-slate-900 tracking-wide">
               Contact Us
             </h5>
             
-            <div className="space-y-2.5 text-xs sm:text-sm text-gray-700">
+            <div className="space-y-3 text-xs sm:text-sm text-gray-700">
               <a
                 href="tel:+916265083155"
                 className="flex items-center space-x-3 hover:text-orange-600 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4" />
                 </div>
                 <span className="font-semibold">(+91) 6265 083 155</span>
@@ -453,14 +460,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="mailto:support@skillgrowind.com"
                 className="flex items-center space-x-3 hover:text-orange-600 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <span className="font-semibold">support@skillgrowind.com</span>
               </a>
 
               <div className="flex items-center space-x-3 text-gray-700">
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <span className="font-semibold">Zone-2, MP Nagar, Bhopal, India</span>
@@ -468,12 +475,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
 
-          {/* Copyright */}
-          <div className="pt-6 border-t border-gray-200 text-center text-[11px] text-gray-500 space-y-1">
-            <p>© 2026 Skill Grow IND. All Rights Reserved.</p>
-            <p className="italic font-serif text-gray-400">Earn knowledge ! Earn money</p>
-          </div>
+        </div>
 
+        {/* Copyright */}
+        <div className="max-w-6xl xl:max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-200 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p>© 2026 Skill Grow IND. All Rights Reserved.</p>
+          <p className="italic font-serif text-gray-400">Earn knowledge ! Earn money</p>
         </div>
       </footer>
 

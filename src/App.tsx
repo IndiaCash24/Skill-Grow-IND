@@ -66,8 +66,8 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // View mode: 'mobile-frame' or 'fluid'
-  const [isMobileFrame, setIsMobileFrame] = useState(true);
+  // View mode: 'mobile-frame' or 'fluid' (Default to fluid for responsive desktop/laptop views)
+  const [isMobileFrame, setIsMobileFrame] = useState(false);
 
   // Seed default registered users & referral code SGIND0023 if not yet initialized
   useEffect(() => {
@@ -237,7 +237,7 @@ export default function App() {
           className={`w-full bg-[#FFFFFF] transition-all duration-300 flex flex-col ${
             isMobileFrame
               ? 'max-w-[430px] sm:min-h-[840px] sm:rounded-[36px] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)] sm:border-[8px] sm:border-slate-800 overflow-hidden'
-              : 'max-w-4xl sm:rounded-2xl sm:shadow-lg sm:border border-gray-200 overflow-hidden'
+              : 'max-w-7xl sm:rounded-2xl sm:shadow-xl sm:border border-gray-200/80 overflow-hidden min-h-[90vh]'
           }`}
         >
           {/* Header Component (Visible across views except standalone register/login if preferred, or shown everywhere) */}
@@ -308,20 +308,22 @@ export default function App() {
 
           {/* 4. DASHBOARD VIEW (Protected) */}
           {activeView === 'dashboard' && (
-            <div className="p-3.5 sm:p-5 pb-10 sm:pb-8 space-y-4 sm:space-y-5 bg-[#F9FAFB] flex-1">
-              {/* Top Profile Card with Verified Badge & Copy ID */}
-              <ProfileCard
-                profile={profile}
-                onEditProfile={() => {
-                  handleNavigate('simulator');
-                }}
-              />
+            <div className="p-3.5 sm:p-6 lg:p-8 pb-10 sm:pb-8 bg-[#F9FAFB] flex-1">
+              <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+                {/* Top Profile Card with Verified Badge & Copy ID */}
+                <ProfileCard
+                  profile={profile}
+                  onEditProfile={() => {
+                    handleNavigate('simulator');
+                  }}
+                />
 
-              {/* 5 Earning Metric Cards Grid */}
-              <EarningCardsGrid
-                earnings={earnings}
-                onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
-              />
+                {/* 5 Earning Metric Cards Grid */}
+                <EarningCardsGrid
+                  earnings={earnings}
+                  onViewDetails={(cardType) => setActiveDetailsCard(cardType)}
+                />
+              </div>
             </div>
           )}
 
