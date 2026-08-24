@@ -49,8 +49,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const userProfile: UserProfile = {
           name: fsUser.name || 'Skill Grow Affiliate',
           referralId: fsUser.userCode || 'SGIND0023',
-          packageTier: fsUser.activePackage || 'SILVER PACKAGE',
-          avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name)}`,
+          packageTier: fsUser.activePackage || 'NO ACTIVE PACKAGE',
+          avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name || 'Affiliate')}`,
           email: fsUser.email || 'affiliate@gmail.com',
           phone: fsUser.phone || '+91 98765 43210',
           joinDate: 'Active Member',
@@ -94,17 +94,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const userProfile: UserProfile = {
           name: matchedUser.name || 'Skill Grow Affiliate',
           referralId: matchedUser.referralId || matchedUser.id || 'SGIND7892X',
-          packageTier: 'EXPERT PACKAGE',
+          packageTier: matchedUser.packageTier || 'NO ACTIVE PACKAGE',
           avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(matchedUser.name || 'User')}`,
           email: matchedUser.email || 'affiliate@gmail.com',
           phone: matchedUser.phone || '+91 98765 43210',
           joinDate: 'Joined Recently',
-          sponsorName: 'Aman Sharma',
+          sponsorName: 'Skill Grow Team',
           sponsorId: matchedUser.sponsorId || 'SGIND0023',
-          kycStatus: 'Verified',
-          upiId: 'affiliate@upi',
-          bankAccount: '•••• •••• •••• 4921',
-          ifscCode: 'SBIN0004921',
+          kycStatus: 'Pending',
+          upiId: '',
+          bankAccount: '',
+          ifscCode: '',
         };
 
         setSuccessMessage(`Login Successful! Welcome back, ${userProfile.name}!`);

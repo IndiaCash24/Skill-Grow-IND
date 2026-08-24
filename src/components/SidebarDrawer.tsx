@@ -61,6 +61,11 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
     onClose();
   };
 
+  const hasActivePackage = profile?.packageTier && 
+    profile.packageTier.toUpperCase() !== 'NO ACTIVE PACKAGE' && 
+    profile.packageTier.toUpperCase() !== 'NONE' && 
+    profile.packageTier.trim() !== '';
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-['Poppins',sans-serif]">
       {/* Backdrop */}
@@ -106,10 +111,10 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                   <img
                     src={profile.avatarUrl}
                     alt={profile.name}
-                    className="w-full h-full rounded-full object-cover border-2 border-white"
+                    className="w-full h-full rounded-full object-cover border-2 border-white bg-indigo-900"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80';
+                        'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=blazerAndShirt&facialHair=beardLight';
                     }}
                   />
                 </div>
@@ -119,16 +124,22 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   </div>
                   <p className="text-[11px] text-gray-400 truncate">ID: {profile.referralId}</p>
-                  <span className="inline-block mt-0.5 text-[9px] font-extrabold bg-purple-500/30 text-purple-300 border border-purple-400/30 px-2 py-0.2 rounded-full">
-                    {profile.packageTier}
-                  </span>
+                  {hasActivePackage ? (
+                    <span className="inline-block mt-0.5 text-[9px] font-extrabold bg-purple-500/30 text-purple-300 border border-purple-400/30 px-2 py-0.2 rounded-full">
+                      {profile.packageTier}
+                    </span>
+                  ) : (
+                    <span className="inline-block mt-0.5 text-[9px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.2 rounded-full">
+                      No Active Package
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className="mt-3 pt-2.5 border-t border-white/10 flex justify-between items-center text-xs">
-                <span className="text-gray-300">Withdrawable Balance:</span>
+                <span className="text-gray-300">Wallet Balance:</span>
                 <span className="font-bold text-emerald-400 text-sm">
-                  ₹ {earnings.walletBalance > 0 ? earnings.walletBalance.toLocaleString('en-IN') : (earnings.today + earnings.passiveIncome).toLocaleString('en-IN')}
+                  ₹ {earnings.walletBalance.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>

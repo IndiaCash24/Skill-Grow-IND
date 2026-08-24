@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, CheckCircle2, AlertCircle, ArrowLeft, Headphones } from 'lucide-react';
 import { UserProfile } from '../types';
 import { registerUserInFirestore } from '../lib/firestoreService';
+import { INDIAN_STATES } from '../data/defaultData';
 
 interface RegisterPageProps {
   onRegisterSuccess: (userProfile: UserProfile) => void;
@@ -9,38 +10,6 @@ interface RegisterPageProps {
   onNavigateToHome: () => void;
   initialReferralCode?: string;
 }
-
-const INDIAN_STATES = [
-  'Andhra Pradesh',
-  'Arunachal Pradesh',
-  'Assam',
-  'Bihar',
-  'Chhattisgarh',
-  'Delhi NCR',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Himachal Pradesh',
-  'Jharkhand',
-  'Karnataka',
-  'Kerala',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Manipur',
-  'Meghalaya',
-  'Mizoram',
-  'Nagaland',
-  'Odisha',
-  'Punjab',
-  'Rajasthan',
-  'Sikkim',
-  'Tamil Nadu',
-  'Telangana',
-  'Tripura',
-  'Uttar Pradesh',
-  'Uttarakhand',
-  'West Bengal',
-];
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({
   onRegisterSuccess,
@@ -146,10 +115,11 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     const newUserProfile: UserProfile = {
       name: fullName.trim(),
       referralId: newReferralId,
-      packageTier: 'SILVER PACKAGE',
+      packageTier: 'NO ACTIVE PACKAGE',
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`,
       email: emailId.trim().toLowerCase(),
       phone: phoneNumber.trim(),
+      state: state,
       joinDate: new Date().toLocaleDateString('en-IN', {
         day: 'numeric',
         month: 'long',
@@ -172,7 +142,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       userCode: newReferralId,
       sponsorCode: finalSponsorCode,
       state: state,
-      packageTier: 'SILVER PACKAGE',
+      packageTier: 'NO ACTIVE PACKAGE',
     }).catch((err) => {
       console.warn('Firestore background write error:', err);
     });
@@ -198,9 +168,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     }
 
     setSuccessMessage(`Registration Successful! Welcome to Skill Grow IND! Your ID is ${newUserId}`);
+
     setTimeout(() => {
       onRegisterSuccess(newUserProfile);
-    }, 900);
+    }, 1200);
   };
 
   return (

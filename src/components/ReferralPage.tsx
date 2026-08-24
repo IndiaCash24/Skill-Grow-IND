@@ -268,37 +268,59 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({
           </div>
 
           <div className="space-y-2">
-            {filteredTeam.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3.5 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                    />
+            {filteredTeam.length > 0 ? (
+              filteredTeam.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3.5 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-900">{member.name}</h4>
+                      <p className="text-[11px] text-gray-500">
+                        {member.package} • <span className="font-semibold text-purple-700">{member.tier}</span> • Joined {member.joinedDate}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900">{member.name}</h4>
-                    <p className="text-[11px] text-gray-500">
-                      {member.package} • <span className="font-semibold text-purple-700">{member.tier}</span> • Joined {member.joinedDate}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="text-right">
-                  <span className="text-xs sm:text-sm font-black text-emerald-600 block">
-                    + ₹ {member.commissionEarned.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">
-                    Commission Paid
-                  </span>
+                  <div className="text-right">
+                    <span className="text-xs sm:text-sm font-black text-emerald-600 block">
+                      + ₹ {member.commissionEarned.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">
+                      Commission Paid
+                    </span>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="py-10 px-4 text-center space-y-3 bg-gray-50/60 rounded-2xl border border-dashed border-gray-200">
+                <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 mx-auto flex items-center justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-800">No Active Downline Members Yet</h4>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                    Real-time team members who register with your Sponsor ID <span className="font-bold text-slate-700">({profile.referralId})</span> will appear here automatically.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={shareOnWhatsApp}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Share Referral Link on WhatsApp</span>
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
 

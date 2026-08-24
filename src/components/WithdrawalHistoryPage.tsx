@@ -36,7 +36,7 @@ export const WithdrawalHistoryPage: React.FC<WithdrawalHistoryPageProps> = ({
   const filteredWithdrawals = withdrawals.filter((item) => {
     const matchesSearch =
       item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.utrNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.utrNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.destination.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;

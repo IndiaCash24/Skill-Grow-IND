@@ -30,13 +30,13 @@ export const BankKycPage: React.FC<BankKycPageProps> = ({
   onNavigate,
 }) => {
   const [bankHolderName, setBankHolderName] = useState(profile.bankHolderName || profile.name || '');
-  const [bankName, setBankName] = useState(profile.bankName || 'State Bank of India');
-  const [bankAccount, setBankAccount] = useState(profile.bankAccount.replace(/[^\d]/g, '') || '501004921829');
-  const [confirmAccount, setConfirmAccount] = useState(profile.bankAccount.replace(/[^\d]/g, '') || '501004921829');
-  const [ifscCode, setIfscCode] = useState(profile.ifscCode || 'SBIN0004921');
-  const [upiId, setUpiId] = useState(profile.upiId || 'surendra@oksbi');
-  const [panNumber, setPanNumber] = useState(profile.panNumber || 'ABCDE1234F');
-  const [aadhaarNumber, setAadhaarNumber] = useState(profile.aadhaarNumber?.replace(/[^\d]/g, '') || '492019284912');
+  const [bankName, setBankName] = useState(profile.bankName || '');
+  const [bankAccount, setBankAccount] = useState(profile.bankAccount ? profile.bankAccount.replace(/[^\d]/g, '') : '');
+  const [confirmAccount, setConfirmAccount] = useState(profile.bankAccount ? profile.bankAccount.replace(/[^\d]/g, '') : '');
+  const [ifscCode, setIfscCode] = useState(profile.ifscCode || '');
+  const [upiId, setUpiId] = useState(profile.upiId || '');
+  const [panNumber, setPanNumber] = useState(profile.panNumber || '');
+  const [aadhaarNumber, setAadhaarNumber] = useState(profile.aadhaarNumber ? profile.aadhaarNumber.replace(/[^\d]/g, '') : '');
   
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [error, setError] = useState('');

@@ -38,7 +38,7 @@ export const WithdrawalPage: React.FC<WithdrawalPageProps> = ({
   const [error, setError] = useState('');
   const [lastRequestAmount, setLastRequestAmount] = useState(0);
 
-  const availableBalance = earnings.walletBalance > 0 ? earnings.walletBalance : (earnings.today + earnings.passiveIncome);
+  const availableBalance = earnings.walletBalance;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

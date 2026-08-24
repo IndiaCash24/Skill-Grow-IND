@@ -36,6 +36,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile
     }
   };
 
+  const hasActivePackage = profile.packageTier && 
+    profile.packageTier.toUpperCase() !== 'NO ACTIVE PACKAGE' && 
+    profile.packageTier.toUpperCase() !== 'NONE' && 
+    profile.packageTier.trim() !== '';
+
   return (
     <div
       id="profile-hero-card"
@@ -45,9 +50,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile
       <div className="absolute top-0 left-0 overflow-hidden w-36 h-36 pointer-events-none z-10">
         <div
           id="package-ribbon"
-          className="absolute transform -rotate-45 bg-gradient-to-r from-[#9333EA] via-[#8B5CF6] to-[#7E22CE] text-white text-[10px] sm:text-[11px] font-extrabold uppercase py-1.5 px-8 left-[-38px] top-[24px] w-[160px] text-center shadow-md tracking-wider border-y border-purple-300/30"
+          className={`absolute transform -rotate-45 text-white text-[9.5px] sm:text-[10.5px] font-extrabold uppercase py-1.5 px-6 left-[-38px] top-[24px] w-[160px] text-center shadow-md tracking-wider border-y ${
+            hasActivePackage
+              ? 'bg-gradient-to-r from-[#9333EA] via-[#8B5CF6] to-[#7E22CE] border-purple-300/30'
+              : 'bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 border-slate-400/30'
+          }`}
         >
-          {profile.packageTier || 'EXPERT PACKAGE'}
+          {hasActivePackage ? profile.packageTier : 'NO ACTIVE PACKAGE'}
         </div>
       </div>
 
