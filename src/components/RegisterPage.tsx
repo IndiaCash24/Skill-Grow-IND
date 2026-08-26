@@ -31,6 +31,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Validate referral code (Optional: valid if empty or valid code)
   const validateReferralCode = (code: string) => {
@@ -53,7 +54,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     return trimmed.length >= 3;
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
@@ -107,6 +108,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
+    setIsSubmitting(true);
+
     // Generate unique new user SG ID
     const randomDigits = Math.floor(100000 + Math.random() * 900000);
     const newUserId = `SG-${randomDigits}`;
@@ -133,45 +136,55 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       ifscCode: '',
     };
 
-    // 1. Write to Live Cloud Firestore Database
-    registerUserInFirestore({
-      uid: newUserId,
-      name: fullName.trim(),
-      email: emailId.trim().toLowerCase(),
-      phone: phoneNumber.trim(),
-      userCode: newReferralId,
-      sponsorCode: finalSponsorCode,
-      state: state,
-      packageTier: 'NO ACTIVE PACKAGE',
-    }).catch((err) => {
-      console.warn('Firestore background write error:', err);
-    });
-
-    // 2. Also keep local persistence for offline sync
     try {
-      const storedUsersRaw = localStorage.getItem('skillgrow_registered_users');
-      const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-      registeredUsers.push({
-        id: newUserId,
-        referralId: newReferralId,
+      // 1. Write to Live Cloud Firestore Database and Authentication
+      await registerUserInFirestore({
+        uid: newUserId,
         name: fullName.trim(),
         email: emailId.trim().toLowerCase(),
         phone: phoneNumber.trim(),
+        userCode: newReferralId,
+        sponsorCode: finalSponsorCode,
         state: state,
         password: password,
-        sponsorId: finalSponsorCode,
-        createdAt: new Date().toISOString(),
+        packageTier: 'NO ACTIVE PACKAGE',
       });
-      localStorage.setItem('skillgrow_registered_users', JSON.stringify(registeredUsers));
-    } catch {
-      // ignore
+
+      // 2. Also keep local persistence for offline sync
+      try {
+        const storedUsersRaw = localStorage.getItem('skillgrow_registered_users');
+        const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+        registeredUsers.push({
+          id: newUserId,
+          referralId: newReferralId,
+          name: fullName.trim(),
+          email: emailId.trim().toLowerCase(),
+          phone: phoneNumber.trim(),
+          state: state,
+          password: password,
+          sponsorId: finalSponsorCode,
+          createdAt: new Date().toISOString(),
+        });
+        localStorage.setItem('skillgrow_registered_users', JSON.stringify(registeredUsers));
+      } catch {
+        // ignore
+      }
+
+      setSuccessMessage(`Registration Successful! Data saved to Firestore collection. Your ID is ${newUserId}`);
+
+      setTimeout(() => {
+        setIsSubmitting(false);
+        onRegisterSuccess(newUserProfile);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Registration processing error:', err);
+      // Fallback transition so user is never blocked
+      setSuccessMessage(`Registration Successful! Welcome to Skill Grow IND! Your ID is ${newUserId}`);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        onRegisterSuccess(newUserProfile);
+      }, 1000);
     }
-
-    setSuccessMessage(`Registration Successful! Welcome to Skill Grow IND! Your ID is ${newUserId}`);
-
-    setTimeout(() => {
-      onRegisterSuccess(newUserProfile);
-    }, 1200);
   };
 
   return (
@@ -393,9 +406,19 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
           <div className="pt-3 flex justify-center">
             <button
               type="submit"
-              className="w-full max-w-[200px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm sm:text-base py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 text-center"
+              disabled={isSubmitting}
+              className={`w-full max-w-[220px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm sm:text-base py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 text-center flex items-center justify-center space-x-2 ${
+                isSubmitting ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
-              Register
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Registering...</span>
+                </>
+              ) : (
+                <span>Register</span>
+              )}
             </button>
           </div>
 

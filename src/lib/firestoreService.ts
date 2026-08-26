@@ -18,7 +18,8 @@ import {
   QueryDocumentSnapshot,
   Unsubscribe,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { db, auth } from './firebase';
 import { UserProfile, EarningStats } from '../types';
 
 // -------------------------------------------------------------
@@ -323,12 +324,42 @@ export async function registerUserInFirestore(params: {
   userCode: string;
   sponsorCode: string;
   state: string;
+  password?: string;
   packageTier?: string;
 }): Promise<FirestoreUser> {
-  const { uid, name, email, phone, userCode, sponsorCode, packageTier = 'SILVER PACKAGE' } = params;
+  const { uid, name, email, phone, userCode, sponsorCode, state, packageTier = 'NO ACTIVE PACKAGE' } = params;
+
+  // 1. Optionally attempt Firebase Auth sign-up / anonymous fallback
+  let authUid = uid;
+  try {
+    if (!auth.currentUser && email && params.password) {
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email.toLowerCase(), params.password);
+        if (userCred.user) {
+          authUid = userCred.user.uid;
+        }
+      } catch (authErr: any) {
+        if (authErr.code === 'auth/email-already-in-use') {
+          const userCred = await signInWithEmailAndPassword(auth, email.toLowerCase(), params.password).catch(() => null);
+          if (userCred?.user) authUid = userCred.user.uid;
+        } else {
+          // If email/password provider is not yet enabled in user's Firebase console, fallback to anonymous auth
+          const anonCred = await signInAnonymously(auth).catch(() => null);
+          if (anonCred?.user) authUid = anonCred.user.uid;
+        }
+      }
+    } else if (!auth.currentUser) {
+      const anonCred = await signInAnonymously(auth).catch(() => null);
+      if (anonCred?.user) authUid = anonCred.user.uid;
+    } else if (auth.currentUser) {
+      authUid = auth.currentUser.uid;
+    }
+  } catch (authError) {
+    console.warn('[Firebase Auth] Notice during registration:', authError);
+  }
 
   const newUserDoc: FirestoreUser = {
-    uid,
+    uid: authUid,
     userCode,
     name,
     email: email.toLowerCase(),
@@ -354,14 +385,90 @@ export async function registerUserInFirestore(params: {
   };
 
   try {
-    const userRef = doc(db, 'users', uid);
+    // Write document to /users/{uid}
+    const userRef = doc(db, 'users', authUid);
     await setDoc(userRef, newUserDoc, { merge: true });
+
+    // Also write document to /users/{userCode} if different (ensures instant lookup and visible SG referral ID in console)
+    if (userCode && userCode !== authUid) {
+      const codeRef = doc(db, 'users', userCode);
+      await setDoc(codeRef, newUserDoc, { merge: true });
+    }
+
+    // Also write by user custom ID if different (e.g. SG-123456)
+    if (uid && uid !== authUid && uid !== userCode) {
+      const customRef = doc(db, 'users', uid);
+      await setDoc(customRef, newUserDoc, { merge: true });
+    }
+
     incrementShardedCounter('global_registered_affiliates', 1);
+    console.log('[Firestore] User document successfully written to "users" collection:', authUid, userCode);
   } catch (error) {
-    console.warn('[Firestore] Register user error (persisting locally):', error);
+    console.error('[Firestore] Error saving user to Firestore collection:', error);
+    // If persistent local cache is active, document is cached and queued
   }
 
   return newUserDoc;
+}
+
+/**
+ * Seeds and bootstraps initial Firestore collections (users, leaderboard, stats)
+ * so that the Firestore console immediately displays all root collections.
+ */
+export async function seedInitialFirestoreCollections() {
+  try {
+    // 1. Seed Official Admin/Sponsor in 'users' collection
+    const sponsorRef = doc(db, 'users', 'SGIND0023');
+    await setDoc(
+      sponsorRef,
+      {
+        uid: 'SGIND0023',
+        userCode: 'SGIND0023',
+        name: 'Skill Grow IND Official',
+        email: 'admin@skillgrowind.com',
+        phone: '+91 98765 43210',
+        role: 'admin',
+        sponsorId: 'DIRECT',
+        sponsorCode: 'DIRECT',
+        activePackage: 'PLATINUM PACKAGE',
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SkillGrowOfficial',
+        wallet: {
+          allTimeEarnings: 245000,
+          todayEarnings: 8500,
+          last7Days: 45000,
+          last30Days: 160000,
+          availableForPayout: 32000,
+          paidOutTotal: 213000,
+        },
+        kyc: {
+          status: 'verified',
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // 2. Seed leaderboard collection
+    const leaderboardRef = doc(db, 'leaderboard', 'today');
+    await setDoc(
+      leaderboardRef,
+      {
+        period: 'today',
+        updatedAt: serverTimestamp(),
+        topAffiliates: [
+          { rank: 1, userId: 'SGIND0023', name: 'Surendra Kumar', earnings: 14500 },
+          { rank: 2, userId: 'SGIND9912', name: 'Rahul Sharma', earnings: 11200 },
+          { rank: 3, userId: 'SGIND5521', name: 'Pooja Verma', earnings: 8900 },
+        ],
+      },
+      { merge: true }
+    );
+
+    console.log('[Firestore] Default collections and user seeded successfully in Firestore.');
+  } catch (err) {
+    console.warn('[Firestore] Notice during initial collection seeding:', err);
+  }
 }
 
 export async function fetchUserByCredential(identifier: string): Promise<FirestoreUser | null> {

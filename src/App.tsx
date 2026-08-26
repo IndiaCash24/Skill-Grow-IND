@@ -43,7 +43,11 @@ import {
   AdminBanner,
   AdminAnnouncement,
 } from './types';
-import { subscribeToUserData, requestWithdrawalInFirestore } from './lib/firestoreService';
+import {
+  subscribeToUserData,
+  requestWithdrawalInFirestore,
+  seedInitialFirestoreCollections,
+} from './lib/firestoreService';
 
 export default function App() {
   // Authentication status with localStorage persistence
@@ -186,6 +190,11 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('skillgrowind_admin_announcements', JSON.stringify(adminAnnouncements));
   }, [adminAnnouncements]);
+
+  // Seed initial Firestore collections and official accounts on startup
+  useEffect(() => {
+    seedInitialFirestoreCollections();
+  }, []);
 
   // Firestore Real-Time Sync
   useEffect(() => {
