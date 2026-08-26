@@ -46,7 +46,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLogin,
   onLogout,
 }) => {
-  const isAdmin = userEmail?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+  const cleanEmail = (userEmail || '').trim().toLowerCase();
+  const isAdmin =
+    cleanEmail === 'surendrabusiness02@gmail.com' ||
+    cleanEmail === 'admin@skillgrowind.com' ||
+    cleanEmail.includes('surendrabusiness02');
   const handleDashboardClick = () => {
     if (!isLoggedIn) {
       onOpenLogin();

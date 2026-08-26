@@ -60,7 +60,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         referralId: fsUser.userCode || 'SGIND0023',
         packageTier: fsUser.activePackage || 'NO ACTIVE PACKAGE',
         avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name || 'Affiliate')}`,
-        email: fsUser.email || '',
+        email: fsUser.email || (trimmedInput.includes('@') ? trimmedInput.toLowerCase() : ''),
         phone: fsUser.phone || '',
         joinDate: 'Active Member',
         sponsorName: 'Skill Grow Official',

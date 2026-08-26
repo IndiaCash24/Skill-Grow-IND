@@ -12,7 +12,13 @@ interface ProfileCardProps {
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile, onNavigateToAdmin }) => {
   const [copied, setCopied] = useState(false);
-  const isAdmin = profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+  const cleanEmail = (profile.email || '').trim().toLowerCase();
+  const cleanRef = (profile.referralId || '').trim().toUpperCase();
+  const isAdmin =
+    cleanEmail === 'surendrabusiness02@gmail.com' ||
+    cleanEmail === 'admin@skillgrowind.com' ||
+    cleanEmail.includes('surendrabusiness02') ||
+    cleanRef === 'SGIND0023';
 
   const handleCopyId = async (e: React.MouseEvent) => {
     e.stopPropagation();

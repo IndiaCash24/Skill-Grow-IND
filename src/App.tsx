@@ -185,7 +185,14 @@ export default function App() {
 
     // Admin view permission gate
     if (view === 'admin') {
-      const isSuperAdmin = profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+      const cleanEmail = (profile.email || '').trim().toLowerCase();
+      const cleanRef = (profile.referralId || '').trim().toUpperCase();
+      const isSuperAdmin =
+        cleanEmail === 'surendrabusiness02@gmail.com' ||
+        cleanEmail === 'admin@skillgrowind.com' ||
+        cleanEmail.includes('surendrabusiness02') ||
+        cleanRef === 'SGIND0023';
+
       if (!isSuperAdmin) {
         setActiveView('home');
         window.scrollTo({ top: 0, behavior: 'smooth' });

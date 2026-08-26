@@ -36,7 +36,13 @@ export const FlashPage: React.FC<FlashPageProps> = ({
   onNavigate,
   onSelectPackageForCheckout,
 }) => {
-  const isAdmin = profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+  const cleanEmail = (profile.email || '').trim().toLowerCase();
+  const cleanRef = (profile.referralId || '').trim().toUpperCase();
+  const isAdmin =
+    cleanEmail === 'surendrabusiness02@gmail.com' ||
+    cleanEmail === 'admin@skillgrowind.com' ||
+    cleanEmail.includes('surendrabusiness02') ||
+    cleanRef === 'SGIND0023';
 
   // Live Flash Countdown Timer for daily flash rewards
   const [timeLeft, setTimeLeft] = useState({

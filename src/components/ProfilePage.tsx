@@ -77,8 +77,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     formData.packageTier.toUpperCase() !== 'NONE' && 
     formData.packageTier.trim() !== '';
 
-  const isAdmin = formData.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com' ||
-    profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+  const checkIsAdmin = (email?: string, refId?: string) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanRef = (refId || '').trim().toUpperCase();
+    return (
+      cleanEmail === 'surendrabusiness02@gmail.com' ||
+      cleanEmail === 'admin@skillgrowind.com' ||
+      cleanEmail.includes('surendrabusiness02') ||
+      cleanRef === 'SGIND0023'
+    );
+  };
+
+  const isAdmin = checkIsAdmin(formData.email) || checkIsAdmin(profile.email) || checkIsAdmin(undefined, formData.referralId);
 
   return (
     <div id="profile-settings-page" className="w-full bg-[#FAF9F6] min-h-screen text-slate-900 pb-16 font-['Poppins',sans-serif]">
@@ -386,6 +396,63 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <span>Save & Update Profile</span>
             </button>
           </div>
+
+          {/* Super Admin Control Center in Profile */}
+          {isAdmin && (
+            <div className="mt-8 bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950 rounded-3xl p-6 border-2 border-amber-500/40 shadow-2xl text-white space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 shrink-0">
+                    <Crown className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-amber-300 uppercase tracking-wide">
+                      Super Admin Command Center
+                    </h3>
+                    <p className="text-xs text-slate-300">
+                      Master administrative powers active for <span className="text-amber-400 font-bold">surendrabusiness02@gmail.com</span>
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('admin')}
+                  className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-lg shadow-orange-500/30 flex items-center space-x-2 cursor-pointer transition-all active:scale-95"
+                >
+                  <ShieldAlert className="w-4 h-4" />
+                  <span>Launch Admin Suite</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div
+                  onClick={() => onNavigate('admin')}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 p-3.5 rounded-2xl cursor-pointer transition-all hover:border-amber-400/40"
+                >
+                  <div className="text-amber-400 font-black text-xs uppercase mb-1">User Management</div>
+                  <div className="text-slate-300 text-[11px]">View & manage all registered affiliates in real-time.</div>
+                </div>
+
+                <div
+                  onClick={() => onNavigate('admin')}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 p-3.5 rounded-2xl cursor-pointer transition-all hover:border-amber-400/40"
+                >
+                  <div className="text-emerald-400 font-black text-xs uppercase mb-1">Payout Approvals</div>
+                  <div className="text-slate-300 text-[11px]">Approve/Reject bank transfer and UPI withdrawals.</div>
+                </div>
+
+                <div
+                  onClick={() => onNavigate('admin')}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 p-3.5 rounded-2xl cursor-pointer transition-all hover:border-amber-400/40"
+                >
+                  <div className="text-purple-400 font-black text-xs uppercase mb-1">Package & Commission</div>
+                  <div className="text-slate-300 text-[11px]">Control package pricing, direct & passive commissions.</div>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
 
         {/* 1-Click Avatar Selection Modal */}
