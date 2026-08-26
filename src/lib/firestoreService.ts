@@ -36,11 +36,13 @@ export interface FirestoreUser {
   sponsorCode: string;
   activePackage: string;
   avatarUrl: string;
+  password?: string;
   wallet: {
     allTimeEarnings: number;
     todayEarnings: number;
     last7Days: number;
     last30Days: number;
+    passiveIncome?: number;
     availableForPayout: number;
     paidOutTotal: number;
   };
@@ -380,12 +382,13 @@ export async function registerUserInFirestore(params: {
     kyc: {
       status: 'pending',
     },
+    password: params.password || '',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
 
   try {
-    // Write document to /users/{uid}
+    // Write document to /users/{authUid}
     const userRef = doc(db, 'users', authUid);
     await setDoc(userRef, newUserDoc, { merge: true });
 
@@ -405,10 +408,82 @@ export async function registerUserInFirestore(params: {
     console.log('[Firestore] User document successfully written to "users" collection:', authUid, userCode);
   } catch (error) {
     console.error('[Firestore] Error saving user to Firestore collection:', error);
-    // If persistent local cache is active, document is cached and queued
   }
 
   return newUserDoc;
+}
+
+/**
+ * Authenticates user against Firestore and Firebase Auth
+ */
+export async function loginUserWithFirestore(
+  identifier: string,
+  passwordInput: string
+): Promise<{ success: boolean; user?: FirestoreUser; error?: string }> {
+  const clean = identifier.trim();
+  try {
+    // 1. If email, try Firebase Auth sign in
+    if (clean.includes('@')) {
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, clean.toLowerCase(), passwordInput);
+        if (userCred.user) {
+          const userDoc = await getDoc(doc(db, 'users', userCred.user.uid));
+          if (userDoc.exists()) {
+            return { success: true, user: userDoc.data() as FirestoreUser };
+          }
+        }
+      } catch (authErr: any) {
+        console.warn('[Firebase Auth Login Notice]', authErr?.code);
+      }
+    }
+
+    // 2. Query Firestore users collection by email, userCode (SG ID), or phone
+    const user = await fetchUserByCredential(clean);
+    if (!user) {
+      // Check if it's default official admin account
+      if (clean.toUpperCase() === 'SGIND0023' || clean.toLowerCase() === 'admin@skillgrowind.com') {
+        const adminDoc = await getDoc(doc(db, 'users', 'SGIND0023'));
+        if (adminDoc.exists()) {
+          return { success: true, user: adminDoc.data() as FirestoreUser };
+        }
+      }
+      return { success: false, error: 'User account not found in database. Please register first.' };
+    }
+
+    // 3. Verify password if stored in document
+    if ((user as any).password && (user as any).password !== passwordInput) {
+      return { success: false, error: 'Incorrect password! Please check your credentials and try again.' };
+    }
+
+    // If user has email and password, ensure Firebase Auth session
+    if (user.email && passwordInput) {
+      try {
+        await signInWithEmailAndPassword(auth, user.email.toLowerCase(), passwordInput);
+      } catch {
+        if (!auth.currentUser) {
+          await signInAnonymously(auth).catch(() => null);
+        }
+      }
+    } else if (!auth.currentUser) {
+      await signInAnonymously(auth).catch(() => null);
+    }
+
+    return { success: true, user };
+  } catch (error: any) {
+    console.warn('[loginUserWithFirestore Error]', error);
+    return { success: false, error: error?.message || 'Login failed. Please try again.' };
+  }
+}
+
+/**
+ * Signs out user from Firebase Auth
+ */
+export async function logoutUserFromFirebase(): Promise<void> {
+  try {
+    await auth.signOut();
+  } catch (err) {
+    console.warn('[Firebase Logout]', err);
+  }
 }
 
 /**

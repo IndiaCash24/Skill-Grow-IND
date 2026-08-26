@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './lib/firebase';
 import { Header } from './components/Header';
 import { HomePage } from './components/HomePage';
 import { ProfileCard } from './components/ProfileCard';
@@ -48,86 +50,32 @@ import {
   requestWithdrawalInFirestore,
   seedInitialFirestoreCollections,
   updateUserEarningsInFirestore,
+  fetchUserByCredential,
+  logoutUserFromFirebase,
 } from './lib/firestoreService';
 
 export default function App() {
-  // Authentication status with localStorage persistence
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    const saved = localStorage.getItem('skillgrow_is_logged_in');
-    return saved === 'true';
-  });
+  // Pure Real-Database Authentication State (No localStorage)
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [activeView, setActiveView] = useState<AppView>('login');
+  const [isAuthInitializing, setIsAuthInitializing] = useState<boolean>(true);
 
-  // Navigation active view with localStorage persistence
-  const [activeView, setActiveView] = useState<AppView>(() => {
-    const savedView = localStorage.getItem('skillgrow_active_view') as AppView | null;
-    const loggedIn = localStorage.getItem('skillgrow_is_logged_in') === 'true';
-    if (savedView) {
-      if (!loggedIn && savedView !== 'home' && savedView !== 'login' && savedView !== 'register' && savedView !== 'packages') {
-        return 'home';
-      }
-      return savedView;
-    }
-    return 'home';
-  });
-
-  // State management with localStorage fallback
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('skillgrowind_profile');
-    return saved ? JSON.parse(saved) : initialProfile;
-  });
-
-  const [earnings, setEarnings] = useState<EarningStats>(() => {
-    const saved = localStorage.getItem('skillgrowind_earnings');
-    return saved ? JSON.parse(saved) : initialEarnings;
-  });
-
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_transactions');
-    return saved ? JSON.parse(saved) : sampleTransactions;
-  });
-
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_withdrawals');
-    return saved ? JSON.parse(saved) : initialWithdrawals;
-  });
-
-  const [packages, setPackages] = useState<PackageItem[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_packages');
-    return saved ? JSON.parse(saved) : allPackages;
-  });
+  // Application Data States
+  const [profile, setProfile] = useState<UserProfile>(initialProfile);
+  const [earnings, setEarnings] = useState<EarningStats>(initialEarnings);
+  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(initialWithdrawals);
+  const [packages, setPackages] = useState<PackageItem[]>(allPackages);
 
   // Admin Data Collections
-  const [adminUsers, setAdminUsers] = useState<AdminUserRecord[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_admin_users');
-    return saved ? JSON.parse(saved) : initialAdminUsers;
-  });
+  const [adminUsers, setAdminUsers] = useState<AdminUserRecord[]>(initialAdminUsers);
+  const [adminOrders, setAdminOrders] = useState<AdminOrderRecord[]>(initialAdminOrders);
+  const [adminKycList, setAdminKycList] = useState<AdminKycRecord[]>(initialAdminKycList);
+  const [platformLinks, setPlatformLinks] = useState<AdminPlatformLinks>(initialPlatformLinks);
+  const [adminBanners, setAdminBanners] = useState<AdminBanner[]>(initialAdminBanners);
+  const [adminAnnouncements, setAdminAnnouncements] = useState<AdminAnnouncement[]>(initialAdminAnnouncements);
 
-  const [adminOrders, setAdminOrders] = useState<AdminOrderRecord[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_admin_orders');
-    return saved ? JSON.parse(saved) : initialAdminOrders;
-  });
-
-  const [adminKycList, setAdminKycList] = useState<AdminKycRecord[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_admin_kyc');
-    return saved ? JSON.parse(saved) : initialAdminKycList;
-  });
-
-  const [platformLinks, setPlatformLinks] = useState<AdminPlatformLinks>(() => {
-    const saved = localStorage.getItem('skillgrowind_platform_links');
-    return saved ? JSON.parse(saved) : initialPlatformLinks;
-  });
-
-  const [adminBanners, setAdminBanners] = useState<AdminBanner[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_admin_banners');
-    return saved ? JSON.parse(saved) : initialAdminBanners;
-  });
-
-  const [adminAnnouncements, setAdminAnnouncements] = useState<AdminAnnouncement[]>(() => {
-    const saved = localStorage.getItem('skillgrowind_admin_announcements');
-    return saved ? JSON.parse(saved) : initialAdminAnnouncements;
-  });
-
-  const [selectedCheckoutPkg, setSelectedCheckoutPkg] = useState<PackageItem>(packages[3] || allPackages[3]);
+  const [selectedCheckoutPkg, setSelectedCheckoutPkg] = useState<PackageItem>(allPackages[3]);
 
   // Modal / Drawer state
   const [activeDetailsCard, setActiveDetailsCard] = useState<
@@ -139,65 +87,73 @@ export default function App() {
   // View mode: 'mobile-frame' or 'fluid'
   const [isMobileFrame, setIsMobileFrame] = useState(false);
 
-  // Sync to local storage
-  useEffect(() => {
-    localStorage.setItem('skillgrow_active_view', activeView);
-  }, [activeView]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrow_is_logged_in', String(isLoggedIn));
-  }, [isLoggedIn]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_profile', JSON.stringify(profile));
-  }, [profile]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_earnings', JSON.stringify(earnings));
-  }, [earnings]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_transactions', JSON.stringify(transactions));
-  }, [transactions]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_withdrawals', JSON.stringify(withdrawals));
-  }, [withdrawals]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_packages', JSON.stringify(packages));
-  }, [packages]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_admin_users', JSON.stringify(adminUsers));
-  }, [adminUsers]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_admin_orders', JSON.stringify(adminOrders));
-  }, [adminOrders]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_admin_kyc', JSON.stringify(adminKycList));
-  }, [adminKycList]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_platform_links', JSON.stringify(platformLinks));
-  }, [platformLinks]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_admin_banners', JSON.stringify(adminBanners));
-  }, [adminBanners]);
-
-  useEffect(() => {
-    localStorage.setItem('skillgrowind_admin_announcements', JSON.stringify(adminAnnouncements));
-  }, [adminAnnouncements]);
-
-  // Seed initial Firestore collections and official accounts on startup
+  // 1. Seed initial Firestore collections and official accounts on startup
   useEffect(() => {
     seedInitialFirestoreCollections();
   }, []);
 
-  // Firestore Real-Time Sync
+  // 2. Firebase Auth State Listener & Real Database Profile Fetch
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const userIdentifier = firebaseUser.email || firebaseUser.uid;
+          const fsUser = await fetchUserByCredential(userIdentifier);
+
+          if (fsUser) {
+            const liveProfile: UserProfile = {
+              name: fsUser.name || 'Skill Grow Affiliate',
+              referralId: fsUser.userCode || 'SGIND0023',
+              packageTier: fsUser.activePackage || 'NO ACTIVE PACKAGE',
+              avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name || 'Affiliate')}`,
+              email: fsUser.email || firebaseUser.email || '',
+              phone: fsUser.phone || '',
+              joinDate: 'Active Member',
+              sponsorName: 'Skill Grow Team',
+              sponsorId: fsUser.sponsorCode || 'SGIND0023',
+              kycStatus: fsUser.kyc?.status === 'verified' ? 'Verified' : 'Pending',
+              upiId: fsUser.kyc?.upiId || '',
+              bankAccount: fsUser.kyc?.accountNumber ? `•••• ${fsUser.kyc.accountNumber.slice(-4)}` : '',
+              ifscCode: fsUser.kyc?.ifscCode || '',
+            };
+
+            setProfile(liveProfile);
+
+            if (fsUser.wallet) {
+              setEarnings({
+                today: fsUser.wallet.todayEarnings || 0,
+                sevenDays: fsUser.wallet.last7Days || 0,
+                thirtyDays: fsUser.wallet.last30Days || 0,
+                allTime: fsUser.wallet.allTimeEarnings || 0,
+                passiveIncome: fsUser.wallet.passiveIncome || 0,
+                walletBalance: fsUser.wallet.availableForPayout || 0,
+                totalWithdrawn: fsUser.wallet.paidOutTotal || 0,
+              });
+            }
+
+            setIsLoggedIn(true);
+            setActiveView((prev) => (prev === 'login' || prev === 'register' ? 'home' : prev));
+          } else {
+            // Document not found yet, wait for explicit user login
+            setIsLoggedIn(false);
+            setActiveView('login');
+          }
+        } catch (err) {
+          console.warn('[Firebase Auth] Error fetching live user profile:', err);
+          setIsLoggedIn(false);
+          setActiveView('login');
+        }
+      } else {
+        setIsLoggedIn(false);
+        setActiveView('login');
+      }
+      setIsAuthInitializing(false);
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // 3. Firestore Real-Time Listener for User Profile & Wallet Updates
   useEffect(() => {
     if (isLoggedIn && profile.referralId) {
       const unsubscribe = subscribeToUserData(
@@ -213,28 +169,28 @@ export default function App() {
     }
   }, [isLoggedIn, profile.referralId]);
 
-  // Navigation Gate
+  // Strict Navigation Gate: Unauthenticated users CANNOT visit Home, Dashboard, or any protected pages
   const handleNavigate = (view: AppView) => {
+    // If not logged in, only allow 'login' or 'register'
+    if (!isLoggedIn) {
+      if (view === 'register') {
+        setActiveView('register');
+      } else {
+        setActiveView('login');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Admin view permission gate
     if (view === 'admin') {
-      const isSuperAdmin = profile.email.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+      const isSuperAdmin = profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
       if (!isSuperAdmin) {
         setActiveView('home');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       setActiveView('admin');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    if (view === 'home' || view === 'login' || view === 'register' || view === 'packages') {
-      setActiveView(view);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    if (!isLoggedIn) {
-      setActiveView('login');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -254,20 +210,23 @@ export default function App() {
     if (userProfile) {
       setProfile(userProfile);
     }
-    setActiveView('dashboard');
+    setActiveView('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleRegisterSuccess = (userProfile: UserProfile) => {
     setIsLoggedIn(true);
     setProfile(userProfile);
-    setActiveView('dashboard');
+    setActiveView('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUserFromFirebase();
     setIsLoggedIn(false);
-    setActiveView('home');
+    setProfile(initialProfile);
+    setEarnings(initialEarnings);
+    setActiveView('login');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -278,7 +237,6 @@ export default function App() {
 
   // Handler for withdrawal submission
   const handleWithdrawalRequest = (amount: number, method: 'UPI' | 'Bank Transfer', destination: string) => {
-    const netAmount = amount * 0.95; // 5% TDS compliance
     const newRecord: WithdrawalRecord = {
       id: `WD-${Math.floor(100000 + Math.random() * 900000)}`,
       amount: amount,
@@ -347,20 +305,16 @@ export default function App() {
       profile.referralId?.toUpperCase() === updatedUser.userCode?.toUpperCase() ||
       profile.email?.toLowerCase() === updatedUser.email?.toLowerCase()
     ) {
-      setEarnings((prev) => {
-        const nextEarnings = {
-          ...prev,
-          today: updatedUser.todayEarnings !== undefined ? updatedUser.todayEarnings : prev.today,
-          sevenDays: updatedUser.sevenDaysEarnings !== undefined ? updatedUser.sevenDaysEarnings : prev.sevenDays,
-          thirtyDays: updatedUser.thirtyDaysEarnings !== undefined ? updatedUser.thirtyDaysEarnings : prev.thirtyDays,
-          allTime: updatedUser.allTimeEarnings !== undefined ? updatedUser.allTimeEarnings : prev.allTime,
-          passiveIncome: updatedUser.passiveIncome !== undefined ? updatedUser.passiveIncome : prev.passiveIncome,
-          walletBalance: updatedUser.walletBalance !== undefined ? updatedUser.walletBalance : prev.walletBalance,
-          totalWithdrawn: updatedUser.totalWithdrawn !== undefined ? updatedUser.totalWithdrawn : prev.totalWithdrawn,
-        };
-        localStorage.setItem('skillgrowind_earnings', JSON.stringify(nextEarnings));
-        return nextEarnings;
-      });
+      setEarnings((prev) => ({
+        ...prev,
+        today: updatedUser.todayEarnings !== undefined ? updatedUser.todayEarnings : prev.today,
+        sevenDays: updatedUser.sevenDaysEarnings !== undefined ? updatedUser.sevenDaysEarnings : prev.sevenDays,
+        thirtyDays: updatedUser.thirtyDaysEarnings !== undefined ? updatedUser.thirtyDaysEarnings : prev.thirtyDays,
+        allTime: updatedUser.allTimeEarnings !== undefined ? updatedUser.allTimeEarnings : prev.allTime,
+        passiveIncome: updatedUser.passiveIncome !== undefined ? updatedUser.passiveIncome : prev.passiveIncome,
+        walletBalance: updatedUser.walletBalance !== undefined ? updatedUser.walletBalance : prev.walletBalance,
+        totalWithdrawn: updatedUser.totalWithdrawn !== undefined ? updatedUser.totalWithdrawn : prev.totalWithdrawn,
+      }));
     }
 
     // Sync directly with Firestore
@@ -480,7 +434,7 @@ export default function App() {
   };
 
   // If in dedicated admin view
-  if (activeView === 'admin') {
+  if (isLoggedIn && activeView === 'admin') {
     return (
       <AdminPage
         users={adminUsers}
@@ -524,8 +478,8 @@ export default function App() {
               : 'max-w-7xl sm:rounded-2xl sm:shadow-xl sm:border border-gray-200/80 overflow-hidden min-h-[90vh]'
           }`}
         >
-          {/* Header Component */}
-          {activeView !== 'login' && activeView !== 'register' && (
+          {/* Header Component - Displayed for Authenticated Users */}
+          {isLoggedIn && activeView !== 'login' && activeView !== 'register' && (
             <Header
               avatarUrl={profile.avatarUrl}
               activeView={activeView}
@@ -534,47 +488,32 @@ export default function App() {
               onSelectView={handleNavigate}
               onOpenMenu={() => setIsSidebarOpen(true)}
               onOpenProfile={() => handleNavigate('profile')}
-              onOpenLogin={() => {
-                setActiveView('login');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onOpenLogin={() => handleNavigate('login')}
               onLogout={handleLogout}
             />
           )}
 
-          {/* 1. LOGIN VIEW */}
-          {activeView === 'login' && (
+          {/* 1. LOGIN VIEW (Authentication Gate) */}
+          {(!isLoggedIn && activeView !== 'register') || activeView === 'login' ? (
             <LoginPage
               onLoginSuccess={handleLoginSuccess}
               onNavigateToRegister={() => {
                 setActiveView('register');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onCloseOrHome={() => {
-                setActiveView('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
             />
-          )}
-
-          {/* 2. REGISTER VIEW */}
-          {activeView === 'register' && (
+          ) : activeView === 'register' ? (
+            /* 2. REGISTER VIEW */
             <RegisterPage
               onRegisterSuccess={handleRegisterSuccess}
               onNavigateToLogin={() => {
                 setActiveView('login');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onNavigateToHome={() => {
-                setActiveView('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
               initialReferralCode=""
             />
-          )}
-
-          {/* 3. HOME VIEW */}
-          {activeView === 'home' && (
+          ) : activeView === 'home' ? (
+            /* 3. HOME VIEW (Protected - only for registered/logged in users) */
             <HomePage
               isLoggedIn={isLoggedIn}
               onRequireLogin={handleRequireLogin}
@@ -582,10 +521,8 @@ export default function App() {
               onOpenCourses={() => handleNavigate('packages')}
               onOpenLeaderboard={() => handleNavigate('leaderboard')}
             />
-          )}
-
-          {/* 4. DASHBOARD VIEW (Real Data from State & Firestore) */}
-          {activeView === 'dashboard' && (
+          ) : activeView === 'dashboard' ? (
+            /* 4. DASHBOARD VIEW (Real Data from Live Firestore) */
             <div className="p-3.5 sm:p-6 lg:p-8 pb-10 sm:pb-8 bg-[#F9FAFB] flex-1">
               <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
                 {/* Top Profile Card with Verified Badge & Edit Trigger */}
@@ -637,79 +574,63 @@ export default function App() {
                 </div>
               </div>
             </div>
-          )}
-
-          {/* 5. PACKAGES & COURSES VIEW */}
-          {activeView === 'packages' && (
+          ) : activeView === 'packages' ? (
+            /* 5. PACKAGES & COURSES VIEW */
             <PackagesPage
               profile={profile}
               onSelectPackageForCheckout={handleSelectPackageForCheckout}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 6. PACKAGE CHECKOUT & ENROLL VIEW */}
-          {activeView === 'checkout' && (
+          ) : activeView === 'checkout' ? (
+            /* 6. PACKAGE CHECKOUT & ENROLL VIEW */
             <PackageCheckoutPage
               initialPackage={selectedCheckoutPkg}
               profile={profile}
               onSuccessfulEnrollment={handleSuccessfulEnrollment}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 7. LEADERBOARD VIEW (Today, Weekly, Monthly, All-Time) */}
-          {activeView === 'leaderboard' && (
+          ) : activeView === 'leaderboard' ? (
+            /* 7. LEADERBOARD VIEW */
             <LeaderboardPage
               profile={profile}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 8. REFERRAL & DOWNLINE TEAM VIEW */}
-          {activeView === 'referral' && (
+          ) : activeView === 'referral' ? (
+            /* 8. REFERRAL & DOWNLINE TEAM VIEW */
             <ReferralPage
               profile={profile}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 9. WITHDRAWAL REQUEST VIEW */}
-          {activeView === 'withdrawal' && (
+          ) : activeView === 'withdrawal' ? (
+            /* 9. WITHDRAWAL REQUEST VIEW */
             <WithdrawalPage
               profile={profile}
               earnings={earnings}
               onSubmitWithdrawal={handleWithdrawalRequest}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 10. WITHDRAWAL HISTORY VIEW */}
-          {activeView === 'withdrawal-history' && (
+          ) : activeView === 'withdrawal-history' ? (
+            /* 10. WITHDRAWAL HISTORY VIEW */
             <WithdrawalHistoryPage
               withdrawals={withdrawals}
               profile={profile}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 11. BANK DETAILS & KYC VIEW */}
-          {activeView === 'bank-kyc' && (
+          ) : activeView === 'bank-kyc' ? (
+            /* 11. BANK DETAILS & KYC VIEW */
             <BankKycPage
               profile={profile}
               onSaveBankKyc={handleUpdateProfile}
               onNavigate={handleNavigate}
             />
-          )}
-
-          {/* 12. PROFILE & AVATAR SETTINGS VIEW */}
-          {activeView === 'profile' && (
+          ) : activeView === 'profile' ? (
+            /* 12. PROFILE & AVATAR SETTINGS VIEW */
             <ProfilePage
               profile={profile}
               onSaveProfile={handleUpdateProfile}
               onNavigate={handleNavigate}
             />
-          )}
+          ) : null}
         </div>
       </main>
 
@@ -733,8 +654,7 @@ export default function App() {
         onSelectView={handleNavigate}
         onOpenLogin={() => {
           setIsSidebarOpen(false);
-          setActiveView('login');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          handleNavigate('login');
         }}
         onLogout={handleLogout}
         profile={profile}
@@ -753,7 +673,6 @@ export default function App() {
             setActiveView('register');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          onCloseOrHome={() => setIsLoginModalOpen(false)}
         />
       )}
     </div>

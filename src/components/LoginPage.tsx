@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, X, AlertCircle, CheckCircle2, ArrowLeft, Headphones } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Headphones, Sparkles, UserPlus, Lock } from 'lucide-react';
 import { UserProfile } from '../types';
-import { fetchUserByCredential } from '../lib/firestoreService';
+import { loginUserWithFirestore } from '../lib/firestoreService';
 
 interface LoginPageProps {
   onLoginSuccess: (userProfile?: UserProfile) => void;
   onNavigateToRegister: () => void;
-  onCloseOrHome: () => void;
+  onCloseOrHome?: () => void;
   isModal?: boolean;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onLoginSuccess,
   onNavigateToRegister,
-  onCloseOrHome,
   isModal = false,
 }) => {
   const [sgIdOrEmail, setSgIdOrEmail] = useState('');
@@ -21,6 +20,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotNotice, setForgotNotice] = useState('');
@@ -33,7 +33,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const trimmedInput = sgIdOrEmail.trim();
 
     if (!trimmedInput) {
-      setErrorMessage('Please enter your SG ID or Email Address.');
+      setErrorMessage('Please enter your SG ID, Email Address, or Phone Number.');
       return;
     }
 
@@ -42,96 +42,43 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       return;
     }
 
-    // 1. Check Cloud Firestore Database
+    setIsSubmitting(true);
+
     try {
-      const fsUser = await fetchUserByCredential(trimmedInput);
-      if (fsUser) {
-        const userProfile: UserProfile = {
-          name: fsUser.name || 'Skill Grow Affiliate',
-          referralId: fsUser.userCode || 'SGIND0023',
-          packageTier: fsUser.activePackage || 'NO ACTIVE PACKAGE',
-          avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name || 'Affiliate')}`,
-          email: fsUser.email || 'affiliate@gmail.com',
-          phone: fsUser.phone || '+91 98765 43210',
-          joinDate: 'Active Member',
-          sponsorName: 'Skill Grow Team',
-          sponsorId: fsUser.sponsorCode || 'SGIND0023',
-          kycStatus: fsUser.kyc?.status === 'verified' ? 'Verified' : 'Pending',
-          upiId: fsUser.kyc?.upiId || '',
-          bankAccount: fsUser.kyc?.accountNumber ? `•••• ${fsUser.kyc.accountNumber.slice(-4)}` : '',
-          ifscCode: fsUser.kyc?.ifscCode || '',
-        };
+      // Direct Real Firestore & Firebase Authentication
+      const result = await loginUserWithFirestore(trimmedInput, password);
 
-        setSuccessMessage(`Login Successful! Welcome back, ${userProfile.name}!`);
-        setTimeout(() => {
-          onLoginSuccess(userProfile);
-        }, 600);
-        return;
-      }
-    } catch (fsErr) {
-      console.warn('Firestore user fetch:', fsErr);
-    }
-
-    // 2. Check local persistence
-    try {
-      const storedUsersRaw = localStorage.getItem('skillgrow_registered_users');
-      const registeredUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-
-      const matchedUser = registeredUsers.find(
-        (u: any) =>
-          u.id?.toUpperCase() === trimmedInput.toUpperCase() ||
-          u.email?.toLowerCase() === trimmedInput.toLowerCase() ||
-          u.referralId?.toUpperCase() === trimmedInput.toUpperCase() ||
-          u.phone === trimmedInput
-      );
-
-      if (matchedUser) {
-        if (matchedUser.password && matchedUser.password !== password) {
-          setErrorMessage('Invalid Password! Please check your credentials.');
-          return;
-        }
-
-        const userProfile: UserProfile = {
-          name: matchedUser.name || 'Skill Grow Affiliate',
-          referralId: matchedUser.referralId || matchedUser.id || 'SGIND7892X',
-          packageTier: matchedUser.packageTier || 'NO ACTIVE PACKAGE',
-          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(matchedUser.name || 'User')}`,
-          email: matchedUser.email || 'affiliate@gmail.com',
-          phone: matchedUser.phone || '+91 98765 43210',
-          joinDate: 'Joined Recently',
-          sponsorName: 'Skill Grow Team',
-          sponsorId: matchedUser.sponsorId || 'SGIND0023',
-          kycStatus: 'Pending',
-          upiId: '',
-          bankAccount: '',
-          ifscCode: '',
-        };
-
-        setSuccessMessage(`Login Successful! Welcome back, ${userProfile.name}!`);
-        setTimeout(() => {
-          onLoginSuccess(userProfile);
-        }, 600);
+      if (!result.success || !result.user) {
+        setIsSubmitting(false);
+        setErrorMessage(result.error || 'Account not found. Please verify your credentials or register a new account.');
         return;
       }
 
-      // Default master login for sponsor
-      if (
-        trimmedInput.toUpperCase() === 'SGIND0023' ||
-        trimmedInput.toUpperCase() === 'ADMIN' ||
-        trimmedInput.includes('@')
-      ) {
-        setSuccessMessage('Login Successful! Redirecting to your dashboard...');
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 600);
-        return;
-      }
+      const fsUser = result.user;
+      const userProfile: UserProfile = {
+        name: fsUser.name || 'Skill Grow Affiliate',
+        referralId: fsUser.userCode || 'SGIND0023',
+        packageTier: fsUser.activePackage || 'NO ACTIVE PACKAGE',
+        avatarUrl: fsUser.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fsUser.name || 'Affiliate')}`,
+        email: fsUser.email || '',
+        phone: fsUser.phone || '',
+        joinDate: 'Active Member',
+        sponsorName: 'Skill Grow Official',
+        sponsorId: fsUser.sponsorCode || 'SGIND0023',
+        kycStatus: fsUser.kyc?.status === 'verified' ? 'Verified' : 'Pending',
+        upiId: fsUser.kyc?.upiId || '',
+        bankAccount: fsUser.kyc?.accountNumber ? `•••• ${fsUser.kyc.accountNumber.slice(-4)}` : '',
+        ifscCode: fsUser.kyc?.ifscCode || '',
+      };
 
-      setErrorMessage(
-        'Account not found. Please check your SG ID / Email or click "Register for free" with referral code SGIND0023.'
-      );
-    } catch {
-      onLoginSuccess();
+      setSuccessMessage(`Login Successful! Welcome, ${userProfile.name}!`);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        onLoginSuccess(userProfile);
+      }, 500);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setErrorMessage(err?.message || 'Login failed. Please check network connection.');
     }
   };
 
@@ -145,151 +92,165 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   const content = (
-    <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] border border-gray-100 p-6 sm:p-8 space-y-5 relative">
-      
-      {/* Top Header Row with Title and Close (X) button */}
-      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-        <h2 className="text-xl sm:text-2xl font-extrabold text-[#D97706] tracking-tight">
-          Login to Skill Grow IND
+    <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_16px_50px_-10px_rgba(0,0,0,0.12)] border border-gray-100 p-6 sm:p-8 space-y-5 relative">
+      {/* Brand Header */}
+      <div className="text-center space-y-1 pb-3 border-b border-gray-100">
+        <div className="inline-flex items-center space-x-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black mb-1">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>SKILL GROW IND</span>
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          Welcome to Skill Grow
         </h2>
+        <p className="text-xs text-gray-500 font-medium">
+          Login or Register to access your account & courses
+        </p>
+      </div>
+
+      {/* Tabs between Login & Register */}
+      <div className="flex bg-slate-100 p-1 rounded-2xl">
         <button
           type="button"
-          onClick={onCloseOrHome}
-          className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 active:scale-95 transition-all shadow-xs"
-          aria-label="Close login"
+          className="flex-1 py-2 text-xs font-black rounded-xl bg-white text-orange-600 shadow-xs transition-all"
         >
-          <X className="w-4 h-4 text-white" />
+          Login
+        </button>
+        <button
+          type="button"
+          onClick={onNavigateToRegister}
+          className="flex-1 py-2 text-xs font-bold rounded-xl text-gray-600 hover:text-orange-600 transition-all flex items-center justify-center space-x-1"
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          <span>Register New</span>
         </button>
       </div>
 
       {/* Error / Success Alerts */}
       {errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-start space-x-2 animate-shake">
+        <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-xs flex items-start space-x-2 animate-shake">
           <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-          <span>{errorMessage}</span>
+          <span className="font-semibold">{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs flex items-start space-x-2">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl text-xs flex items-start space-x-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <span>{successMessage}</span>
+          <span className="font-bold">{successMessage}</span>
         </div>
       )}
 
       {/* Login Form */}
       <form onSubmit={handleLogin} className="space-y-4 text-left">
-        {/* SG ID Or Email Address */}
-        <div className="space-y-1">
-          <label className="block text-xs font-semibold text-gray-800">
-            SG ID Or Email Address
+        {/* SG ID / Email Address */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-bold text-gray-800">
+            SG ID, Email Address, or Phone
           </label>
           <input
             type="text"
             value={sgIdOrEmail}
             onChange={(e) => setSgIdOrEmail(e.target.value)}
-            placeholder="SG ID"
-            className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+            placeholder="e.g. SGIND0023 or your email"
+            className="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
             required
+            disabled={isSubmitting}
           />
         </div>
 
         {/* Password */}
-        <div className="space-y-1">
-          <label className="block text-xs font-semibold text-gray-800">
-            Password
-          </label>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-bold text-gray-800">
+              Password
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsForgotOpen(!isForgotOpen)}
+              className="text-orange-600 hover:text-orange-700 font-bold text-xs"
+            >
+              Forgot?
+            </button>
+          </div>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your Password..."
-              className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all pr-11"
+              placeholder="Enter your password..."
+              className="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-11"
               required
+              disabled={isSubmitting}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 cursor-pointer"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* Links: Register for free & Forgot password */}
-        <div className="space-y-2 pt-1 text-xs">
-          <div className="text-gray-600">
-            <span>Don't have an account yet? </span>
-            <button
-              type="button"
-              onClick={onNavigateToRegister}
-              className="text-[#D97706] hover:text-[#B45309] font-bold hover:underline"
-            >
-              Register for free
-            </button>
-          </div>
-
-          <div>
-            <button
-              type="button"
-              onClick={() => setIsForgotOpen(!isForgotOpen)}
-              className="text-[#D97706] hover:text-[#B45309] font-medium hover:underline text-xs"
-            >
-              Forgot your password?
-            </button>
-          </div>
-        </div>
-
         {/* Forgot password drop panel */}
         {isForgotOpen && (
-          <div className="p-3 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-2 text-xs">
-            <p className="text-gray-700 font-medium">Reset your password:</p>
+          <div className="p-3.5 bg-orange-50/80 border border-orange-200 rounded-2xl space-y-2 text-xs">
+            <p className="text-gray-800 font-bold">Reset your password:</p>
             <div className="flex space-x-2">
               <input
                 type="text"
                 placeholder="Enter SG ID or Email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
-                className="flex-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs"
+                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs font-semibold"
               />
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-xs"
               >
                 Send
               </button>
             </div>
-            {forgotNotice && <p className="text-emerald-700 font-semibold">{forgotNotice}</p>}
+            {forgotNotice && <p className="text-emerald-700 font-bold">{forgotNotice}</p>}
           </div>
         )}
 
-        {/* Divider */}
-        <div className="border-t border-dashed border-gray-200 pt-1" />
-
-        {/* Login Button (Orange Pill) */}
+        {/* Action Button */}
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full max-w-[160px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm sm:text-base py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 text-center"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-500/25 hover:shadow-xl transition-all active:scale-98 text-center flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
           >
-            Login
+            <Lock className="w-4 h-4" />
+            <span>{isSubmitting ? 'Verifying with Database...' : 'Secure Login'}</span>
+          </button>
+        </div>
+
+        {/* Register prompt */}
+        <div className="pt-2 text-center text-xs text-gray-600">
+          <span>New to Skill Grow IND? </span>
+          <button
+            type="button"
+            onClick={onNavigateToRegister}
+            className="text-orange-600 hover:text-orange-700 font-black hover:underline ml-1"
+          >
+            Create New Account
           </button>
         </div>
 
         {/* Quick Demo Test Credential Shortcut */}
-        <div className="pt-2 text-center">
+        <div className="pt-2 text-center border-t border-slate-100">
           <button
             type="button"
             onClick={() => {
               setSgIdOrEmail('SGIND0023');
               setPassword('123456');
             }}
-            className="text-[11px] text-gray-500 hover:text-orange-600 underline font-medium"
+            className="text-[11px] text-slate-500 hover:text-orange-600 underline font-semibold"
           >
-            Quick Login with Sponsor: SGIND0023 / 123456
+            Quick Fill: Official Admin (SGIND0023 / 123456)
           </button>
         </div>
       </form>
@@ -298,33 +259,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   if (isModal) {
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
         {content}
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#FDFBF7] py-6 px-4 flex flex-col items-center justify-center font-['Poppins',sans-serif]">
-      <div className="w-full max-w-md flex items-center justify-between mb-4">
-        <button
-          onClick={onCloseOrHome}
-          type="button"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-orange-600 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </button>
-
-        <button
-          onClick={onNavigateToRegister}
-          type="button"
-          className="text-xs font-bold text-orange-600 hover:underline"
-        >
-          Register for free
-        </button>
-      </div>
-
+    <div className="w-full min-h-screen bg-[#FDFBF7] py-8 px-4 flex flex-col items-center justify-center font-['Poppins',sans-serif]">
       {content}
 
       {/* Floating Need Help */}
