@@ -16,6 +16,8 @@ import {
   User,
   ArrowDownLeft,
   ShieldAlert,
+  Flame,
+  Crown,
 } from 'lucide-react';
 import { AppView } from '../types';
 
@@ -100,6 +102,19 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Home className="w-4 h-4 text-orange-500" />
           <span>Home</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectView('flash')}
+          className={`px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer ${
+            activeView === 'flash'
+              ? 'bg-amber-50 text-amber-700 font-extrabold border border-amber-300'
+              : 'hover:bg-amber-50/60 text-slate-700 hover:text-amber-700'
+          }`}
+        >
+          <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+          <span>Flash Hub</span>
         </button>
 
         <button
@@ -233,6 +248,19 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               </div>
             </div>
+
+            {/* Quick Mobile Admin Button */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onSelectView('admin')}
+                className="lg:hidden flex items-center space-x-1 bg-slate-900 text-amber-300 text-[10px] font-black px-2.5 py-1.5 rounded-xl border border-amber-400/40 shadow-xs cursor-pointer active:scale-95"
+                title="Super Admin Panel"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span>Admin</span>
+              </button>
+            )}
           </div>
         ) : (
           <button

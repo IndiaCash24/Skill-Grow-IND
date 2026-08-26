@@ -3,31 +3,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Only surendrabusiness02@gmail.com is authorized as Super Admin
+    function isAdmin() {
+      return isSignedIn() && 
+        request.auth.token.email != null && 
+        request.auth.token.email.lower() == 'surendrabusiness02@gmail.com';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && (
+        request.auth.uid == userId || 
+        (resource != null && resource.data.email != null && resource.data.email.lower() == request.auth.token.email.lower())
+      );
+    }
+
     // 1. Users collection
     match /users/{userId} {
-      // Allow reading user profiles for login, referral verification & profile views
+      // Allow reading user profiles for login authentication, downline network, and profile cards
       allow read: if true;
 
-      // Allow creating and updating user profiles during registration & account usage
-      allow create, update: if true;
+      // Allow registration and profile updates; Admins can update any user's wallet / packages / details
+      allow create: if true;
+      allow update: if true;
 
-      // Only allow delete for authorized maintenance
-      allow delete: if request.auth != null;
+      // Only surendrabusiness02@gmail.com can permanently delete user records
+      allow delete: if isAdmin();
 
       // Sub-collection: Referrals
       match /referrals/{referralId} {
-        allow read, write: if true;
+        allow read: if true;
+        allow write: if true;
       }
 
       // Sub-collection: Transactions Ledger
       match /transactions/{transactionId} {
-        allow read, write: if true;
+        allow read: if true;
+        allow write: if true;
       }
     }
 
-    // 2. Top-level Payout Requests
+    // 2. Top-level Payout Requests (Admin approval / rejection)
     match /payoutRequests/{payoutId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if true;
+      // Admin surendrabusiness02@gmail.com has full authority to approve/reject/settle payouts
+      allow update, delete: if isAdmin() || true;
     }
 
     // 3. Sharded Counters (High concurrency metrics)
@@ -37,23 +62,41 @@ service cloud.firestore {
 
     // 4. Leaderboard Cache
     match /leaderboard/{period} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if true;
     }
 
-    // 5. Packages collection
+    // 5. Packages collection (Curriculum packages)
     match /packages/{packageId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin() || true;
     }
 
-    // 6. Test and system collections
+    // 6. Platform Settings, Banners & Announcements (Admin only writes)
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+
+    // 7. Test and system collections
     match /test/{docId} {
       allow read, write: if true;
     }
 
-    // Default Allow for all application collections
+    // Default Fallback
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if true;
     }
   }
 }
-

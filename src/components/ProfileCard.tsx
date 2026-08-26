@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, BadgeCheck } from 'lucide-react';
+import { Copy, Check, BadgeCheck, Crown } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProfile } from '../types';
 
@@ -7,10 +7,12 @@ interface ProfileCardProps {
   profile: UserProfile;
   onEditProfile: () => void;
   onSelectPackage?: () => void;
+  onNavigateToAdmin?: () => void;
 }
 
-export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile }) => {
+export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile, onNavigateToAdmin }) => {
   const [copied, setCopied] = useState(false);
+  const isAdmin = profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
 
   const handleCopyId = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -141,6 +143,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile
         <div className="mt-2.5 inline-flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 animate-fade-in font-medium">
           <Check className="w-3 h-3 text-emerald-600" />
           <span>Referral ID copied to clipboard!</span>
+        </div>
+      )}
+
+      {/* Admin Panel Quick Action Button if super admin */}
+      {isAdmin && onNavigateToAdmin && (
+        <div className="mt-3.5 pt-3 border-t border-gray-100 flex justify-center">
+          <button
+            type="button"
+            onClick={onNavigateToAdmin}
+            className="px-4 py-2 bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 hover:from-black hover:to-amber-900 text-amber-300 font-extrabold text-xs rounded-xl shadow-md border border-amber-500/40 flex items-center space-x-2 transition-all cursor-pointer active:scale-95"
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-400" />
+            <span>Open Super Admin Command Center</span>
+          </button>
         </div>
       )}
     </div>

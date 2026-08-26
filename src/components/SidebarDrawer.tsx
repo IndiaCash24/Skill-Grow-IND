@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   Award,
   ShieldAlert,
+  Flame,
+  Crown,
 } from 'lucide-react';
 import { UserProfile, EarningStats, AppView } from '../types';
 
@@ -186,6 +188,25 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <span>Home Page</span>
             </button>
 
+            {/* Flash Hub Link */}
+            <button
+              id="menu-flash-link"
+              onClick={() => navigateTo('flash')}
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors text-left ${
+                activeView === 'flash'
+                  ? 'bg-amber-50 text-amber-700 border border-amber-300'
+                  : 'text-amber-900 bg-amber-50/60 hover:bg-amber-100/80'
+              }`}
+            >
+              <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+              <div className="flex-1 flex items-center justify-between">
+                <span>Flash Hub (Fast-Track)</span>
+                <span className="text-[9px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-black uppercase">
+                  Hot
+                </span>
+              </div>
+            </button>
+
             {/* 2. Earning Dashboard Link */}
             <button
               id="menu-dashboard-link"
@@ -335,16 +356,19 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               <button
                 id="menu-admin-link"
                 onClick={() => navigateTo('admin')}
-                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors text-left cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all text-left cursor-pointer border ${
                   activeView === 'admin'
-                    ? 'bg-slate-900 text-white shadow-md'
-                    : 'text-slate-900 bg-slate-100 hover:bg-slate-200'
+                    ? 'bg-slate-950 text-amber-300 border-amber-400/50 shadow-md ring-2 ring-amber-400/30'
+                    : 'text-white bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 hover:from-black hover:to-amber-900 border-amber-500/40 shadow-sm'
                 }`}
               >
-                <ShieldAlert className="w-4 h-4 text-orange-500" />
+                <Crown className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
                 <div className="flex-1 flex items-center justify-between">
-                  <span>Admin Control Suite</span>
-                  <span className="text-[9px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-black uppercase">
+                  <div>
+                    <div className="font-black text-amber-300">Admin Control Suite</div>
+                    <div className="text-[9.5px] text-slate-300 font-normal">Super Admin Command Center</div>
+                  </div>
+                  <span className="text-[9px] bg-gradient-to-r from-orange-500 to-amber-500 text-white px-2 py-0.5 rounded-full font-black uppercase shadow-xs">
                     Admin
                   </span>
                 </div>

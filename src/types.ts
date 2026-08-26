@@ -14,7 +14,8 @@ export type AppView =
   | 'courses'
   | 'login'
   | 'register'
-  | 'admin';
+  | 'admin'
+  | 'flash';
 
 export type AdminTabType =
   | 'overview'

@@ -19,6 +19,8 @@ import {
   ShoppingBag,
   ArrowRight,
   Edit3,
+  Crown,
+  ShieldAlert,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { INDIAN_STATES } from '../data/defaultData';
@@ -75,12 +77,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     formData.packageTier.toUpperCase() !== 'NONE' && 
     formData.packageTier.trim() !== '';
 
+  const isAdmin = formData.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com' ||
+    profile.email?.trim().toLowerCase() === 'surendrabusiness02@gmail.com';
+
   return (
     <div id="profile-settings-page" className="w-full bg-[#FAF9F6] min-h-screen text-slate-900 pb-16 font-['Poppins',sans-serif]">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-4 sm:p-6 shadow-md">
         <div className="max-w-4xl mx-auto space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={() => onNavigate('dashboard')}
               className="inline-flex items-center space-x-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
@@ -89,10 +94,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <span>Back to Dashboard</span>
             </button>
 
-            <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full flex items-center space-x-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Verified Account: {formData.referralId}</span>
-            </span>
+            <div className="flex items-center space-x-2">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('admin')}
+                  className="text-[11px] font-black bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-3.5 py-1.5 rounded-full shadow-md flex items-center space-x-1.5 transition-all cursor-pointer active:scale-95 border border-amber-300/40"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-200" />
+                  <span>Admin Panel</span>
+                </button>
+              )}
+
+              <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full flex items-center space-x-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Verified Account: {formData.referralId}</span>
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -107,6 +125,40 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       </div>
 
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        {/* Super Admin VIP Card Notification */}
+        {isAdmin && (
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950 text-white p-5 rounded-3xl border border-amber-500/40 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center space-x-3.5 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                <Crown className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2 justify-center sm:justify-start">
+                  <h3 className="text-sm sm:text-base font-black text-amber-300 uppercase tracking-wide">
+                    Super Admin Account Detected
+                  </h3>
+                  <span className="bg-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">
+                    Admin
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Logged in as <span className="font-bold text-amber-300">{formData.email || profile.email}</span> with master platform administrative rights.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('admin')}
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs sm:text-sm font-black rounded-2xl shadow-xl shadow-orange-500/30 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95 shrink-0"
+            >
+              <ShieldAlert className="w-4 h-4 text-white" />
+              <span>Open Admin Panel</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Success Alert */}
         {savedSuccess && (
           <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 p-4 rounded-2xl flex items-center space-x-3 shadow-xs animate-fade-in">

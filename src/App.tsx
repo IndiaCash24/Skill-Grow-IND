@@ -18,6 +18,7 @@ import { BankKycPage } from './components/BankKycPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { AdminPage } from './components/admin/AdminPage';
+import { FlashPage } from './components/FlashPage';
 import {
   initialProfile,
   initialEarnings,
@@ -521,6 +522,14 @@ export default function App() {
               onOpenCourses={() => handleNavigate('packages')}
               onOpenLeaderboard={() => handleNavigate('leaderboard')}
             />
+          ) : activeView === 'flash' ? (
+            /* FLASH PAGE VIEW (Fast-Track Hub & Featured Packages) */
+            <FlashPage
+              profile={profile}
+              earnings={earnings}
+              onNavigate={handleNavigate}
+              onSelectPackageForCheckout={handleSelectPackageForCheckout}
+            />
           ) : activeView === 'dashboard' ? (
             /* 4. DASHBOARD VIEW (Real Data from Live Firestore) */
             <div className="p-3.5 sm:p-6 lg:p-8 pb-10 sm:pb-8 bg-[#F9FAFB] flex-1">
@@ -529,6 +538,7 @@ export default function App() {
                 <ProfileCard
                   profile={profile}
                   onEditProfile={() => handleNavigate('profile')}
+                  onNavigateToAdmin={() => handleNavigate('admin')}
                 />
 
                 {/* 5 Earning Metric Cards Grid */}
