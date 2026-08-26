@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, CheckCircle2, AlertCircle, Headphones, Sparkles, LogIn } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, AlertCircle, Headphones, ShieldCheck, LogIn } from 'lucide-react';
 import { UserProfile } from '../types';
 import { registerUserInFirestore } from '../lib/firestoreService';
 import { INDIAN_STATES } from '../data/defaultData';
@@ -150,7 +150,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
         {/* Brand Header */}
         <div className="text-center space-y-1 pb-3 border-b border-gray-100">
           <div className="inline-flex items-center space-x-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
+            <ShieldCheck className="w-3.5 h-3.5" />
             <span>SKILL GROW IND</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">

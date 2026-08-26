@@ -10,7 +10,6 @@ import {
   FileCheck,
   QrCode,
   CreditCard,
-  Sparkles,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import confetti from 'canvas-confetti';

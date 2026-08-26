@@ -6,7 +6,6 @@ import {
   Trash2,
   CheckCircle2,
   AlertTriangle,
-  Sparkles,
   Zap,
   Radio,
   Clock,

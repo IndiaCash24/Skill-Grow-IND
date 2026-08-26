@@ -11,7 +11,6 @@ import {
   DollarSign,
   Package,
   Layers,
-  Sparkles,
   Zap,
   ExternalLink,
   ChevronRight,
@@ -93,7 +92,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
           <div>
             <div className="flex items-center space-x-3 mb-2">
               <span className="px-3 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full text-xs font-black tracking-wider uppercase flex items-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
                 <span>Executive Command Center</span>
               </span>
               <span className="inline-flex items-center text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">

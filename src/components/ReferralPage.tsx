@@ -7,7 +7,7 @@ import {
   QrCode,
   Download,
   ArrowLeft,
-  Sparkles,
+  Award,
   MessageCircle,
   Eye,
   Users,
@@ -135,7 +135,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({
             </button>
 
             <span className="text-[11px] font-bold bg-pink-500 text-white px-2.5 py-0.5 rounded-full flex items-center space-x-1">
-              <Sparkles className="w-3 h-3" />
+              <Percent className="w-3 h-3" />
               <span>Up to 70% Direct Commission</span>
             </span>
           </div>
@@ -328,7 +328,7 @@ export const ReferralPage: React.FC<ReferralPageProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+              <Award className="w-4 h-4 text-amber-500" />
               <span>Official Skill Grow IND Promo Kits</span>
             </h3>
             <span className="text-xs text-gray-500">High-Converting Creatives</span>

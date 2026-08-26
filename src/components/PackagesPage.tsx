@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   BookOpen,
   CheckCircle2,
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   Clock,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Sparkles, BadgeCheck } from 'lucide-react';
+import { Copy, Check, BadgeCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProfile } from '../types';
 
@@ -139,7 +139,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onEditProfile
       {/* Copied feedback toast message */}
       {copied && (
         <div className="mt-2.5 inline-flex items-center space-x-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 animate-fade-in font-medium">
-          <Sparkles className="w-3 h-3 text-emerald-600" />
+          <Check className="w-3 h-3 text-emerald-600" />
           <span>Referral ID copied to clipboard!</span>
         </div>
       )}

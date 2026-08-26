@@ -7,7 +7,6 @@ import {
   QrCode,
   CreditCard,
   Building2,
-  Sparkles,
   Percent,
   Check,
   AlertCircle,

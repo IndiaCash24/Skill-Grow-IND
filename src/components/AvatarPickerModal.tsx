@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, Sparkles, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { X, Check, User, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { avatarPresets } from '../data/defaultData';
 
 interface AvatarPickerModalProps {
@@ -46,7 +46,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
         <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-pink-50/70">
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
-              <Sparkles className="w-5 h-5" />
+              <User className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-base text-slate-900">Choose Your Avatar</h3>

@@ -16,7 +16,6 @@ import {
   FileText,
   Plus,
   Trash2,
-  Sparkles,
 } from 'lucide-react';
 import { AdminPlatformLinks } from '../../../types';
 

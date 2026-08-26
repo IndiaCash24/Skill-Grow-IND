@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ArrowLeft,
   Search,
-  Sparkles,
+  Heart,
   Crown,
   Trophy,
 } from 'lucide-react';
@@ -328,8 +328,8 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ profile, onNav
                 {isCheered && (
                   <div className="absolute inset-0 bg-orange-500/10 border border-orange-400 rounded-2xl flex items-center justify-center backdrop-blur-2xs animate-fade-in pointer-events-none">
                     <span className="text-xs font-bold text-orange-700 bg-white px-3 py-1.5 rounded-full border border-orange-300 shadow-lg flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
-                      <span>Cheered! 🎉</span>
+                      <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+                      <span>Cheered!</span>
                     </span>
                   </div>
                 )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Sparkles,
+  Trophy,
   Wallet,
   ChevronLeft,
   ChevronRight,
@@ -38,7 +38,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     {
       id: 'banner-meetup',
       badge: 'ANNUAL MEGA SUMMIT 2026',
-      badgeIcon: Sparkles,
+      badgeIcon: Trophy,
       badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
       titlePrefix: 'SKILL GROW',
       titleHighlight: 'MEGA MEETUP',

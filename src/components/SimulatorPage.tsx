@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Sliders,
-  Sparkles,
   RefreshCw,
   PlusCircle,
   CheckCircle2,
@@ -176,7 +175,7 @@ export const SimulatorPage: React.FC<SimulatorPageProps> = ({
         {/* Quick Presets Card */}
         <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-6 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
+            <Sliders className="w-4 h-4 text-purple-600" />
             <span>Quick 1-Click Earning Presets</span>
           </h3>
 

@@ -20,7 +20,6 @@ import {
   UserCheck,
   TrendingUp,
   Coins,
-  Sparkles,
   RotateCcw,
   Check,
   Sliders,

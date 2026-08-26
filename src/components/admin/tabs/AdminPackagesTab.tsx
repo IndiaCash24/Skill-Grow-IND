@@ -6,7 +6,6 @@ import {
   Check,
   X,
   Layers,
-  Sparkles,
   Zap,
   BookOpen,
   DollarSign,

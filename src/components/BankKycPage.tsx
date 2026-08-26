@@ -12,7 +12,6 @@ import {
   User,
   Check,
   Clock,
-  Sparkles,
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { submitKycToFirestore } from '../lib/firestoreService';

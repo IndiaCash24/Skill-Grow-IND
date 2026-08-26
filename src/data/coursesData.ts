@@ -73,7 +73,7 @@ export const coursePackages: CoursePackage[] = [
     discountPercentage: 38,
     studentsEnrolled: '120k+',
     colorTheme: 'amber',
-    icon: 'Sparkles',
+    icon: 'Award',
     description:
       'Supercharge your confidence, closing skills, and communication power to convert leads into high-paying sales effortlessly.',
   },

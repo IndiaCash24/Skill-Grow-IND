@@ -9,7 +9,6 @@ import {
   Award,
   Calendar,
   Save,
-  Sparkles,
   ArrowLeft,
   Camera,
   Image as ImageIcon,
@@ -178,7 +177,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   onClick={() => setIsAvatarModalOpen(true)}
                   className="w-full sm:w-auto px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  <ImageIcon className="w-4 h-4 text-indigo-600" />
                   <span>Choose Avatar (16 Characters)</span>
                 </button>
               </div>

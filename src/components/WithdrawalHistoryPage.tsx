@@ -12,7 +12,6 @@ import {
   ArrowDownLeft,
   ShieldCheck,
   Calendar,
-  Sparkles,
   ExternalLink,
 } from 'lucide-react';
 import { WithdrawalRecord, UserProfile } from '../types';

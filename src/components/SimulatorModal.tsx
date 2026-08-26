@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, RefreshCw, PlusCircle, CheckCircle2, User, Image, DollarSign } from 'lucide-react';
+import { X, Sliders, RefreshCw, PlusCircle, CheckCircle2, User, Image, DollarSign } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProfile, EarningStats } from '../types';
 
@@ -103,7 +103,7 @@ export const SimulatorModal: React.FC<SimulatorModalProps> = ({
         {/* Header */}
         <div className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 p-4 sm:p-5 text-white flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <Sparkles className="w-5 h-5 text-amber-300" />
+            <Sliders className="w-5 h-5 text-amber-300" />
             <div>
               <h3 className="font-bold text-base sm:text-lg">Dashboard Customizer & Simulator</h3>
               <p className="text-[11px] text-pink-100">Set exact numbers or simulate real commissions</p>

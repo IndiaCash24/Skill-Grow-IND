@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, AlertCircle, CheckCircle2, Headphones, Sparkles, UserPlus, Lock } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle2, Headphones, ShieldCheck, UserPlus, Lock } from 'lucide-react';
 import { UserProfile } from '../types';
 import { loginUserWithFirestore } from '../lib/firestoreService';
 
@@ -88,7 +88,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       setForgotNotice('Please enter your registered Email or SG ID.');
       return;
     }
-    setForgotNotice(`Password reset link & OTP sent to ${forgotEmail}. (Default test password: 123456)`);
+    setForgotNotice(`Password reset instructions have been sent to ${forgotEmail}.`);
   };
 
   const content = (
@@ -96,7 +96,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       {/* Brand Header */}
       <div className="text-center space-y-1 pb-3 border-b border-gray-100">
         <div className="inline-flex items-center space-x-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black mb-1">
-          <Sparkles className="w-3.5 h-3.5" />
+          <ShieldCheck className="w-3.5 h-3.5" />
           <span>SKILL GROW IND</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -151,7 +151,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             type="text"
             value={sgIdOrEmail}
             onChange={(e) => setSgIdOrEmail(e.target.value)}
-            placeholder="e.g. SGIND0023 or your email"
+            placeholder="Enter your SG ID or Email"
             className="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
             required
             disabled={isSubmitting}
@@ -224,7 +224,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-orange-500/25 hover:shadow-xl transition-all active:scale-98 text-center flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
           >
             <Lock className="w-4 h-4" />
-            <span>{isSubmitting ? 'Verifying with Database...' : 'Secure Login'}</span>
+            <span>{isSubmitting ? 'Verifying Credentials...' : 'Secure Login'}</span>
           </button>
         </div>
 
@@ -237,20 +237,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="text-orange-600 hover:text-orange-700 font-black hover:underline ml-1"
           >
             Create New Account
-          </button>
-        </div>
-
-        {/* Quick Demo Test Credential Shortcut */}
-        <div className="pt-2 text-center border-t border-slate-100">
-          <button
-            type="button"
-            onClick={() => {
-              setSgIdOrEmail('SGIND0023');
-              setPassword('123456');
-            }}
-            className="text-[11px] text-slate-500 hover:text-orange-600 underline font-semibold"
-          >
-            Quick Fill: Official Admin (SGIND0023 / 123456)
           </button>
         </div>
       </form>

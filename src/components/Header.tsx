@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   UserPlus,
   LogOut,
-  Sparkles,
   ShoppingBag,
   History,
   CreditCard,

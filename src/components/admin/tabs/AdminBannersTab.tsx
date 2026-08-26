@@ -8,7 +8,6 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  Sparkles,
   Layers,
 } from 'lucide-react';
 import { AdminBanner } from '../../../types';

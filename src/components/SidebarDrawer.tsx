@@ -14,7 +14,6 @@ import {
   Maximize2,
   Smartphone,
   LogOut,
-  Sparkles,
   User,
   ArrowDownLeft,
   ShoppingBag,

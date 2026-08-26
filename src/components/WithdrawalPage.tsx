@@ -7,7 +7,6 @@ import {
   AlertCircle,
   Building2,
   ArrowLeft,
-  Sparkles,
   ShieldCheck,
   CreditCard,
   History,
