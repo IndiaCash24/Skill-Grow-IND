@@ -433,12 +433,13 @@ export async function seedInitialFirestoreCollections() {
         activePackage: 'PLATINUM PACKAGE',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SkillGrowOfficial',
         wallet: {
-          allTimeEarnings: 245000,
-          todayEarnings: 8500,
-          last7Days: 45000,
-          last30Days: 160000,
-          availableForPayout: 32000,
-          paidOutTotal: 213000,
+          allTimeEarnings: 0,
+          todayEarnings: 0,
+          last7Days: 0,
+          last30Days: 0,
+          passiveIncome: 0,
+          availableForPayout: 0,
+          paidOutTotal: 0,
         },
         kyc: {
           status: 'verified',
@@ -622,5 +623,87 @@ export async function createPayoutRequestInFirestore(params: {
     params.payoutMethod as any,
     params.destination
   );
+}
+
+/**
+ * Admin utility: Directly updates all metrics of a user's Earning Dashboard in Firestore
+ * including today, 7 days, 30 days, all time, passive, wallet balance and total withdrawn.
+ */
+export async function updateUserEarningsInFirestore(
+  identifier: string,
+  walletUpdates: {
+    todayEarnings?: number;
+    last7Days?: number;
+    last30Days?: number;
+    allTimeEarnings?: number;
+    passiveIncome?: number;
+    availableForPayout?: number;
+    paidOutTotal?: number;
+  }
+): Promise<boolean> {
+  const clean = identifier.trim();
+  try {
+    const usersRef = collection(db, 'users');
+    const updatePayload: Record<string, any> = {
+      updatedAt: serverTimestamp(),
+    };
+
+    if (walletUpdates.todayEarnings !== undefined) updatePayload['wallet.todayEarnings'] = Number(walletUpdates.todayEarnings);
+    if (walletUpdates.last7Days !== undefined) updatePayload['wallet.last7Days'] = Number(walletUpdates.last7Days);
+    if (walletUpdates.last30Days !== undefined) updatePayload['wallet.last30Days'] = Number(walletUpdates.last30Days);
+    if (walletUpdates.allTimeEarnings !== undefined) updatePayload['wallet.allTimeEarnings'] = Number(walletUpdates.allTimeEarnings);
+    if (walletUpdates.passiveIncome !== undefined) updatePayload['wallet.passiveIncome'] = Number(walletUpdates.passiveIncome);
+    if (walletUpdates.availableForPayout !== undefined) updatePayload['wallet.availableForPayout'] = Number(walletUpdates.availableForPayout);
+    if (walletUpdates.paidOutTotal !== undefined) updatePayload['wallet.paidOutTotal'] = Number(walletUpdates.paidOutTotal);
+
+    // Try direct document update
+    const directDoc = doc(db, 'users', clean);
+    const snap = await getDoc(directDoc);
+    if (snap.exists()) {
+      await updateDoc(directDoc, updatePayload);
+      console.log('[Firestore] User wallet updated directly:', clean);
+      return true;
+    }
+
+    // Try finding by userCode or email
+    const qCode = query(usersRef, where('userCode', '==', clean.toUpperCase()), limit(1));
+    const snapCode = await getDocs(qCode);
+    if (!snapCode.empty) {
+      await updateDoc(snapCode.docs[0].ref, updatePayload);
+      console.log('[Firestore] User wallet updated by userCode:', clean);
+      return true;
+    }
+
+    if (clean.includes('@')) {
+      const qEmail = query(usersRef, where('email', '==', clean.toLowerCase()), limit(1));
+      const snapEmail = await getDocs(qEmail);
+      if (!snapEmail.empty) {
+        await updateDoc(snapEmail.docs[0].ref, updatePayload);
+        console.log('[Firestore] User wallet updated by email:', clean);
+        return true;
+      }
+    }
+
+    // If doc doesn't exist yet, create it with these wallet values
+    await setDoc(directDoc, {
+      uid: clean,
+      userCode: clean,
+      wallet: {
+        todayEarnings: walletUpdates.todayEarnings || 0,
+        last7Days: walletUpdates.last7Days || 0,
+        last30Days: walletUpdates.last30Days || 0,
+        allTimeEarnings: walletUpdates.allTimeEarnings || 0,
+        passiveIncome: walletUpdates.passiveIncome || 0,
+        availableForPayout: walletUpdates.availableForPayout || 0,
+        paidOutTotal: walletUpdates.paidOutTotal || 0,
+      },
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+
+    return true;
+  } catch (err) {
+    console.warn('[Firestore] updateUserEarnings error:', err);
+    return false;
+  }
 }
 

@@ -41,6 +41,9 @@ export interface AdminUserRecord {
   walletBalance: number;
   allTimeEarnings: number;
   todayEarnings: number;
+  sevenDaysEarnings?: number;
+  thirtyDaysEarnings?: number;
+  passiveIncome?: number;
   totalWithdrawn: number;
   kycStatus: 'Verified' | 'Pending' | 'Rejected' | 'Not Submitted';
   joinDate: string;

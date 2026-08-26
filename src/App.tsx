@@ -47,6 +47,7 @@ import {
   subscribeToUserData,
   requestWithdrawalInFirestore,
   seedInitialFirestoreCollections,
+  updateUserEarningsInFirestore,
 } from './lib/firestoreService';
 
 export default function App() {
@@ -340,6 +341,38 @@ export default function App() {
   // Admin Mutations Handlers
   const handleAdminUpdateUser = (updatedUser: AdminUserRecord) => {
     setAdminUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+
+    // If currently logged-in user earnings were changed, update real-time earning dashboard
+    if (
+      profile.referralId?.toUpperCase() === updatedUser.userCode?.toUpperCase() ||
+      profile.email?.toLowerCase() === updatedUser.email?.toLowerCase()
+    ) {
+      setEarnings((prev) => {
+        const nextEarnings = {
+          ...prev,
+          today: updatedUser.todayEarnings !== undefined ? updatedUser.todayEarnings : prev.today,
+          sevenDays: updatedUser.sevenDaysEarnings !== undefined ? updatedUser.sevenDaysEarnings : prev.sevenDays,
+          thirtyDays: updatedUser.thirtyDaysEarnings !== undefined ? updatedUser.thirtyDaysEarnings : prev.thirtyDays,
+          allTime: updatedUser.allTimeEarnings !== undefined ? updatedUser.allTimeEarnings : prev.allTime,
+          passiveIncome: updatedUser.passiveIncome !== undefined ? updatedUser.passiveIncome : prev.passiveIncome,
+          walletBalance: updatedUser.walletBalance !== undefined ? updatedUser.walletBalance : prev.walletBalance,
+          totalWithdrawn: updatedUser.totalWithdrawn !== undefined ? updatedUser.totalWithdrawn : prev.totalWithdrawn,
+        };
+        localStorage.setItem('skillgrowind_earnings', JSON.stringify(nextEarnings));
+        return nextEarnings;
+      });
+    }
+
+    // Sync directly with Firestore
+    updateUserEarningsInFirestore(updatedUser.userCode || updatedUser.id, {
+      todayEarnings: updatedUser.todayEarnings,
+      last7Days: updatedUser.sevenDaysEarnings,
+      last30Days: updatedUser.thirtyDaysEarnings,
+      allTimeEarnings: updatedUser.allTimeEarnings,
+      passiveIncome: updatedUser.passiveIncome,
+      availableForPayout: updatedUser.walletBalance,
+      paidOutTotal: updatedUser.totalWithdrawn,
+    });
   };
 
   const handleAdminAddUser = (newUser: AdminUserRecord) => {

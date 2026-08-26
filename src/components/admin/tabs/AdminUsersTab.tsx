@@ -18,6 +18,14 @@ import {
   Download,
   AlertTriangle,
   UserCheck,
+  TrendingUp,
+  Coins,
+  Sparkles,
+  RotateCcw,
+  Check,
+  Sliders,
+  Wallet,
+  Zap,
 } from 'lucide-react';
 import { AdminUserRecord } from '../../../types';
 
@@ -40,6 +48,29 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
   // Modals state
   const [editingUser, setEditingUser] = useState<AdminUserRecord | null>(null);
+  
+  // Dedicated Earning Dashboard Modal
+  const [earningsModalUser, setEarningsModalUser] = useState<AdminUserRecord | null>(null);
+  const [earningsForm, setEarningsForm] = useState<{
+    today: number;
+    sevenDays: number;
+    thirtyDays: number;
+    allTime: number;
+    passiveIncome: number;
+    walletBalance: number;
+    totalWithdrawn: number;
+  }>({
+    today: 0,
+    sevenDays: 0,
+    thirtyDays: 0,
+    allTime: 0,
+    passiveIncome: 0,
+    walletBalance: 0,
+    totalWithdrawn: 0,
+  });
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const [balanceModalUser, setBalanceModalUser] = useState<AdminUserRecord | null>(null);
   const [balanceAdjustAmount, setBalanceAdjustAmount] = useState<number>(0);
   const [balanceAdjustType, setBalanceAdjustType] = useState<'credit' | 'debit'>('credit');
@@ -57,6 +88,12 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
     sponsorName: 'SURENDRA KUMAR',
     state: 'Delhi NCR',
     walletBalance: 0,
+    allTimeEarnings: 0,
+    todayEarnings: 0,
+    sevenDaysEarnings: 0,
+    thirtyDaysEarnings: 0,
+    passiveIncome: 0,
+    totalWithdrawn: 0,
     kycStatus: 'Verified',
   });
 
@@ -77,11 +114,47 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
     return matchSearch && matchTier && matchRole && matchKyc && matchStatus;
   });
 
+  const handleOpenEarningsModal = (user: AdminUserRecord) => {
+    setEarningsModalUser(user);
+    setEarningsForm({
+      today: user.todayEarnings || 0,
+      sevenDays: user.sevenDaysEarnings !== undefined ? user.sevenDaysEarnings : 0,
+      thirtyDays: user.thirtyDaysEarnings !== undefined ? user.thirtyDaysEarnings : 0,
+      allTime: user.allTimeEarnings || 0,
+      passiveIncome: user.passiveIncome !== undefined ? user.passiveIncome : 0,
+      walletBalance: user.walletBalance || 0,
+      totalWithdrawn: user.totalWithdrawn || 0,
+    });
+  };
+
+  const handleSaveEarnings = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!earningsModalUser) return;
+
+    const updated: AdminUserRecord = {
+      ...earningsModalUser,
+      todayEarnings: Number(earningsForm.today) || 0,
+      sevenDaysEarnings: Number(earningsForm.sevenDays) || 0,
+      thirtyDaysEarnings: Number(earningsForm.thirtyDays) || 0,
+      allTimeEarnings: Number(earningsForm.allTime) || 0,
+      passiveIncome: Number(earningsForm.passiveIncome) || 0,
+      walletBalance: Number(earningsForm.walletBalance) || 0,
+      totalWithdrawn: Number(earningsForm.totalWithdrawn) || 0,
+    };
+
+    onUpdateUser(updated);
+    setEarningsModalUser(null);
+    setToastMessage(`Earnings Dashboard for ${updated.name} updated & synced successfully!`);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   const handleSaveUserEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
     onUpdateUser(editingUser);
     setEditingUser(null);
+    setToastMessage(`Profile for ${editingUser.name} updated!`);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleApplyBalanceAdjust = (e: React.FormEvent) => {
@@ -105,6 +178,8 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
     setBalanceModalUser(null);
     setBalanceAdjustAmount(0);
     setBalanceAdjustReason('');
+    setToastMessage(`Wallet balance adjusted for ${updated.name}!`);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleCreateNewUser = (e: React.FormEvent) => {
@@ -124,9 +199,12 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
       sponsorCode: newUserData.sponsorCode || 'SGIND0023',
       sponsorName: newUserData.sponsorName || 'SURENDRA KUMAR',
       walletBalance: Number(newUserData.walletBalance) || 0,
-      allTimeEarnings: Number(newUserData.walletBalance) || 0,
-      todayEarnings: 0,
-      totalWithdrawn: 0,
+      allTimeEarnings: Number(newUserData.allTimeEarnings) || 0,
+      todayEarnings: Number(newUserData.todayEarnings) || 0,
+      sevenDaysEarnings: Number(newUserData.sevenDaysEarnings) || 0,
+      thirtyDaysEarnings: Number(newUserData.thirtyDaysEarnings) || 0,
+      passiveIncome: Number(newUserData.passiveIncome) || 0,
+      totalWithdrawn: Number(newUserData.totalWithdrawn) || 0,
       kycStatus: newUserData.kycStatus || 'Verified',
       joinDate: 'Today, 2024',
       state: newUserData.state || 'Delhi NCR',
@@ -144,15 +222,25 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
       status: 'active',
       sponsorCode: 'SGIND0023',
       state: 'Delhi NCR',
+      walletBalance: 0,
+      allTimeEarnings: 0,
+      todayEarnings: 0,
+      sevenDaysEarnings: 0,
+      thirtyDaysEarnings: 0,
+      passiveIncome: 0,
+      totalWithdrawn: 0,
     });
+    setToastMessage(`New user ${fullNewUser.name} (${fullNewUser.userCode}) registered!`);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const exportUsersCsv = () => {
-    const headers = 'User Code,Name,Email,Phone,Role,Package,Status,KYC,Wallet Balance,All Time Earnings,Sponsor Code\n';
+    const headers =
+      'User Code,Name,Email,Phone,Role,Package,Status,KYC,Today Earning,7 Days Earning,30 Days Earning,All Time Earnings,Passive Income,Wallet Balance,Total Withdrawn,Sponsor Code\n';
     const rows = filteredUsers
       .map(
         (u) =>
-          `"${u.userCode}","${u.name}","${u.email}","${u.phone}","${u.role}","${u.packageTier}","${u.status}","${u.kycStatus}",${u.walletBalance},${u.allTimeEarnings},"${u.sponsorCode}"`
+          `"${u.userCode}","${u.name}","${u.email}","${u.phone}","${u.role}","${u.packageTier}","${u.status}","${u.kycStatus}",${u.todayEarnings || 0},${u.sevenDaysEarnings || 0},${u.thirtyDaysEarnings || 0},${u.allTimeEarnings || 0},${u.passiveIncome || 0},${u.walletBalance || 0},${u.totalWithdrawn || 0},"${u.sponsorCode}"`
       )
       .join('\n');
 
@@ -166,13 +254,31 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Toast Banner */}
+      {toastMessage && (
+        <div className="bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center justify-between text-xs font-bold animate-slide-up">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+            <span>{toastMessage}</span>
+          </div>
+          <button onClick={() => setToastMessage(null)} className="p-1 hover:bg-emerald-700 rounded-lg">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header with Search & Controls */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">Affiliates & Students Directory</h2>
-            <p className="text-xs text-slate-500">
-              Manage affiliate accounts, packages, wallet balances, roles, and downlines.
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">Affiliates & Students Directory</h2>
+              <span className="bg-orange-100 text-orange-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                {users.length} Users
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Manage accounts, modify real Earning Dashboard amounts, adjust wallets, and control tiers.
             </p>
           </div>
 
@@ -262,10 +368,10 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                 <th className="py-3.5 px-4">User Details</th>
                 <th className="py-3.5 px-4">Role & Package</th>
                 <th className="py-3.5 px-4">Sponsor Info</th>
-                <th className="py-3.5 px-4">KYC Status</th>
+                <th className="py-3.5 px-4">KYC</th>
+                <th className="py-3.5 px-4">Today / All-Time</th>
                 <th className="py-3.5 px-4">Wallet Balance</th>
-                <th className="py-3.5 px-4">All-Time Earnings</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 text-right">Earning & Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -341,19 +447,41 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
                       </span>
                     </td>
 
-                    {/* Wallet Balance */}
-                    <td className="py-3.5 px-4 font-black text-slate-900">
-                      ₹{user.walletBalance.toLocaleString('en-IN')}
+                    {/* Today / All-Time Earnings */}
+                    <td className="py-3.5 px-4">
+                      <div className="space-y-0.5">
+                        <div className="text-[11px] font-bold text-pink-600">
+                          Today: ₹{(user.todayEarnings || 0).toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[11px] font-bold text-emerald-600">
+                          All Time: ₹{(user.allTimeEarnings || 0).toLocaleString('en-IN')}
+                        </div>
+                      </div>
                     </td>
 
-                    {/* All-Time Earnings */}
-                    <td className="py-3.5 px-4 font-bold text-emerald-600">
-                      ₹{user.allTimeEarnings.toLocaleString('en-IN')}
+                    {/* Wallet Balance */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-black text-slate-900">
+                        ₹{(user.walletBalance || 0).toLocaleString('en-IN')}
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Out: ₹{(user.totalWithdrawn || 0).toLocaleString('en-IN')}
+                      </div>
                     </td>
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end space-x-1.5">
+                        {/* Primary Button: Edit Earning Dashboard */}
+                        <button
+                          onClick={() => handleOpenEarningsModal(user)}
+                          title="Change Earning Dashboard Amounts"
+                          className="px-2.5 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-[11px] shadow-xs flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
+                        >
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          <span>Edit Earnings</span>
+                        </button>
+
                         <button
                           onClick={() => {
                             setBalanceModalUser(user);
@@ -396,6 +524,322 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
           </table>
         </div>
       </div>
+
+      {/* MODAL: Edit Earning Dashboard Amounts */}
+      {earningsModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-slide-up">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-black text-base sm:text-lg">Edit Earning Dashboard Amounts</h3>
+                    <span className="text-[10px] font-black bg-orange-500/30 text-orange-300 border border-orange-500/40 px-2 py-0.5 rounded-full uppercase">
+                      Admin Control
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    {earningsModalUser.name} ({earningsModalUser.userCode}) • {earningsModalUser.packageTier}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEarningsModalUser(null)}
+                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSaveEarnings} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 text-xs">
+              {/* Quick Action Presets Bar */}
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-700 flex items-center space-x-1">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Quick Adjust Shortcuts</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500">1-click calculations & resets</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm({
+                        today: 0,
+                        sevenDays: 0,
+                        thirtyDays: 0,
+                        allTime: 0,
+                        passiveIncome: 0,
+                        walletBalance: 0,
+                        totalWithdrawn: 0,
+                      })
+                    }
+                    className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold text-[11px] flex items-center space-x-1 cursor-pointer transition-all"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Zero Out All (₹0 Real Balance)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm((prev) => ({
+                        ...prev,
+                        today: prev.today + 1000,
+                        sevenDays: prev.sevenDays + 1000,
+                        thirtyDays: prev.thirtyDays + 1000,
+                        allTime: prev.allTime + 1000,
+                        walletBalance: prev.walletBalance + 1000,
+                      }))
+                    }
+                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-[11px] transition-all"
+                  >
+                    +₹1,000 (Silver Commission)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm((prev) => ({
+                        ...prev,
+                        today: prev.today + 2100,
+                        sevenDays: prev.sevenDays + 2100,
+                        thirtyDays: prev.thirtyDays + 2100,
+                        allTime: prev.allTime + 2100,
+                        walletBalance: prev.walletBalance + 2100,
+                      }))
+                    }
+                    className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl font-bold text-[11px] transition-all"
+                  >
+                    +₹2,100 (Gold Commission)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm((prev) => ({
+                        ...prev,
+                        today: prev.today + 4200,
+                        sevenDays: prev.sevenDays + 4200,
+                        thirtyDays: prev.thirtyDays + 4200,
+                        allTime: prev.allTime + 4200,
+                        walletBalance: prev.walletBalance + 4200,
+                      }))
+                    }
+                    className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-xl font-bold text-[11px] transition-all"
+                  >
+                    +₹4,200 (Diamond Commission)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm((prev) => ({
+                        ...prev,
+                        today: prev.today + 7000,
+                        sevenDays: prev.sevenDays + 7000,
+                        thirtyDays: prev.thirtyDays + 7000,
+                        allTime: prev.allTime + 7000,
+                        walletBalance: prev.walletBalance + 7000,
+                      }))
+                    }
+                    className="px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-xl font-bold text-[11px] transition-all"
+                  >
+                    +₹7,000 (Platinum Commission)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEarningsForm((prev) => ({
+                        ...prev,
+                        passiveIncome: prev.passiveIncome + 900,
+                        allTime: prev.allTime + 900,
+                        walletBalance: prev.walletBalance + 900,
+                      }))
+                    }
+                    className="px-2.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 rounded-xl font-bold text-[11px] transition-all"
+                  >
+                    +₹900 (Passive Royalty)
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid of Earning Dashboard Metric Inputs */}
+              <div>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">
+                  Dashboard Metric Cards (Visible on User Screen)
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* 1. Today's Earning */}
+                  <div className="p-3.5 rounded-2xl border border-pink-200 bg-pink-50/40 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-pink-900 flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#D81B60]" />
+                        <span>Today's Earning (₹)</span>
+                      </label>
+                      <span className="text-[10px] text-pink-700 font-semibold">Magenta Card</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.today}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, today: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/20"
+                      required
+                    />
+                  </div>
+
+                  {/* 2. 7 Days Earning */}
+                  <div className="p-3.5 rounded-2xl border border-purple-200 bg-purple-50/40 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-purple-900 flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#6D28D9]" />
+                        <span>7 Days Earning (₹)</span>
+                      </label>
+                      <span className="text-[10px] text-purple-700 font-semibold">Indigo Card</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.sevenDays}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, sevenDays: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                      required
+                    />
+                  </div>
+
+                  {/* 3. 30 Days Earning */}
+                  <div className="p-3.5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-blue-900 flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#1E40AF]" />
+                        <span>30 Days Earning (₹)</span>
+                      </label>
+                      <span className="text-[10px] text-blue-700 font-semibold">Cobalt Blue Card</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.thirtyDays}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, thirtyDays: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      required
+                    />
+                  </div>
+
+                  {/* 4. All Time Earning */}
+                  <div className="p-3.5 rounded-2xl border border-indigo-200 bg-indigo-50/40 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-indigo-900 flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#7C3AED]" />
+                        <span>All Time Earning (₹)</span>
+                      </label>
+                      <span className="text-[10px] text-indigo-700 font-semibold">Purple Card</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.allTime}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, allTime: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      required
+                    />
+                  </div>
+
+                  {/* 5. Passive Income */}
+                  <div className="p-3.5 rounded-2xl border border-orange-200 bg-orange-50/40 space-y-1.5 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-orange-900 flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]" />
+                        <span>Passive Income (₹)</span>
+                      </label>
+                      <span className="text-[10px] text-orange-700 font-semibold">Radiant Orange Card</span>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.passiveIncome}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, passiveIncome: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Wallet and Payouts section */}
+              <div>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">
+                  Wallet & Payout Balances
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Wallet Balance */}
+                  <div className="p-3.5 rounded-2xl border border-emerald-200 bg-emerald-50/40 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-emerald-900 flex items-center space-x-1.5">
+                        <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Wallet Balance (Available for Payout ₹)</span>
+                      </label>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.walletBalance}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, walletBalance: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      required
+                    />
+                  </div>
+
+                  {/* Total Withdrawn */}
+                  <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="font-extrabold text-slate-800 flex items-center space-x-1.5">
+                        <Coins className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Total Withdrawn / Paid Out (₹)</span>
+                      </label>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      value={earningsForm.totalWithdrawn}
+                      onChange={(e) => setEarningsForm({ ...earningsForm, totalWithdrawn: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-sm font-black text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setEarningsModalUser(null)}
+                  className="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-black shadow-lg shadow-orange-500/25 flex items-center space-x-2 cursor-pointer transition-all active:scale-98"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save & Sync Earning Dashboard</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL 1: Edit User Profile */}
       {editingUser && (
@@ -548,7 +992,7 @@ export const AdminUsersTab: React.FC<AdminUsersTabProps> = ({
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
                 <span className="font-bold text-slate-600">Current Balance:</span>
                 <span className="text-base font-black text-slate-900">
-                  ₹{balanceModalUser.walletBalance.toLocaleString('en-IN')}
+                  ₹{(balanceModalUser.walletBalance || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
